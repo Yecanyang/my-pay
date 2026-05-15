@@ -3,76 +3,65 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>戶部尚書 V15.3 - 鐵腕修復版</title>
-
-    <link rel="apple-touch-icon" href="111.png">
-    <link rel="icon" href="111.png">
-    
+    <title>戶部尚書 V15.4 - 全面肅清版</title>
+    <link rel="apple-touch-icon" href="image.png">
+    <link rel="icon" href="image.png">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-title" content="戶部尚書">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root { --bg: #f0f2f5; --out: #ff4757; --in: #2ed573; --gold: #ffa502; --silver: #576574; --salary: #a55eea; --blue: #4b7bec; }
         body { font-family: -apple-system, sans-serif; background: var(--bg); margin: 0; padding: 10px; display: flex; justify-content: center; }
         .card { background: white; padding: 20px; border-radius: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 100%; max-width: 400px; text-align: center; position: relative; min-height: 90vh; }
-        .top-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-        .quote-box { font-style: italic; color: #e67e22; font-size: 0.9rem; margin-bottom: 15px; min-height: 2.8rem; display: flex; align-items: center; justify-content: center; background: #fff5e6; border-radius: 15px; padding: 8px 12px; line-height: 1.4; border: 1px dashed #ffd39b; }
-        .date-selector { display: flex; gap: 5px; align-items: center; }
-        select { border: 1px solid #ddd; padding: 8px; border-radius: 12px; font-size: 0.9rem; background: #f8f9fa; }
+        .top-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .quote-box { font-style: italic; color: #e67e22; font-size: 0.85rem; margin-bottom: 15px; min-height: 2.8rem; display: flex; align-items: center; justify-content: center; background: #fff5e6; border-radius: 15px; padding: 8px; border: 1px dashed #ffd39b; }
+        select { border: 1px solid #ddd; padding: 8px; border-radius: 12px; background: #f8f9fa; }
         .page { display: none; }
         .page.active { display: block; }
-        .balance-box { background: linear-gradient(145deg, #ffffff, #f0f0f0); padding: 20px; border-radius: 20px; margin-bottom: 15px; box-shadow: 5px 5px 15px #d1d1d1, -5px -5px 15px #ffffff; }
-        .balance-amount { font-size: 2.2rem; font-weight: bold; color: var(--silver); margin: 10px 0; }
-        .main-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
-        .stat-card { background: white; padding: 10px; border-radius: 15px; border: 1px solid #f0f0f0; }
-        .stat-label { font-size: 0.75rem; color: #888; }
-        .stat-val { font-weight: bold; font-size: 1rem; display: block; margin-top: 4px; }
-        .btn-container { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
-        .btn { border: none; padding: 15px; border-radius: 15px; font-weight: bold; color: white; cursor: pointer; font-size: 1rem; transition: 0.2s; -webkit-tap-highlight-color: transparent; }
-        .btn:active { transform: scale(0.95); }
+        .balance-box { background: linear-gradient(145deg, #ffffff, #f0f0f0); padding: 15px; border-radius: 20px; margin-bottom: 15px; box-shadow: 5px 5px 15px #d1d1d1; }
+        .balance-amount { font-size: 2.2rem; font-weight: bold; color: var(--silver); margin: 5px 0; }
+        .main-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
+        .stat-card { background: white; padding: 8px; border-radius: 12px; border: 1px solid #f0f0f0; }
+        .stat-label { font-size: 0.7rem; color: #888; }
+        .stat-val { font-weight: bold; font-size: 0.9rem; display: block; }
+        .btn-container { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+        .btn { border: none; padding: 15px; border-radius: 15px; font-weight: bold; color: white; cursor: pointer; font-size: 1rem; -webkit-tap-highlight-color: transparent; }
         .btn-salary { background: var(--salary); grid-column: span 2; }
         .btn-out { background: var(--out); }
         .btn-in { background: var(--in); }
         .btn-nav { background: var(--blue); }
         .btn-gold { background: var(--gold); }
-        .detail-list { text-align: left; margin: 10px 0; max-height: 180px; overflow-y: auto; padding: 10px; background: #f9f9f9; border-radius: 15px; border: 1px solid #eee; }
-        .detail-item { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #eee; cursor: pointer; }
-        .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.9); display: none; align-items: center; justify-content: center; z-index: 10000; flex-direction: column; }
+        .detail-list { text-align: left; margin: 5px 0; max-height: 180px; overflow-y: auto; padding: 5px; background: #fafafa; border-radius: 15px; }
+        .detail-item { display: flex; justify-content: space-between; padding: 12px; border-bottom: 1px solid #eee; font-size: 0.95rem; }
+        .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.9); display: none; align-items: center; justify-content: center; z-index: 10000; }
     </style>
 </head>
 <body>
 
-<div id="loading" class="loading-overlay">⌛ 正在重新磨墨...</div>
+<div id="loading" class="loading-overlay">⌛ 正在整肅官場紀律...</div>
 
 <div class="card">
     <div class="top-nav">
-        <div class="date-selector">
-            <select id="sel-year" onchange="handleDateChange()"></select>
-            <select id="sel-month" onchange="handleDateChange()"></select>
+        <div>
+            <select id="sel-year" onchange="updateUI()"></select>
+            <select id="sel-month" onchange="updateUI()"></select>
         </div>
-        <div onclick="openSettings()" style="cursor:pointer; font-size:1.5rem; opacity:0.7;">⚙️</div>
+        <div onclick="openSettings()" style="cursor:pointer; font-size:1.2rem;">⚙️</div>
     </div>
 
     <div id="page-home" class="page active">
-        <div class="quote-box" id="quote-display">「尚書大人，微臣已恭候多時。」</div>
+        <div class="quote-box" id="quote-display">微臣叩見尚書大人。</div>
         <div class="balance-box">
             <div class="stat-label">國庫白銀總量</div>
             <div class="balance-amount" id="balance-display">$ 0</div>
-            <div class="main-stats">
-                <div class="stat-card"><span class="stat-label">本月俸祿</span><span class="stat-val" id="cur-salary" style="color:var(--salary)">$ 0</span></div>
-                <div class="stat-card"><span class="stat-label">本月充公</span><span class="stat-val" id="cur-saved" style="color:var(--in)">$ 0</span></div>
-                <div class="stat-card"><span class="stat-label">本月支出</span><span class="stat-val" id="cur-out" style="color:var(--out)">$ 0</span></div>
-                <div class="stat-card"><span class="stat-label">進度</span><span class="stat-val" id="cur-progress" style="color:var(--gold)">0%</span></div>
-            </div>
+            <div class="main-stats" id="stats-grid"></div>
         </div>
         <input type="number" id="amount" placeholder="輸入數額..." inputmode="numeric" style="width:100%; padding:15px; border-radius:15px; border:2px solid #eee; box-sizing:border-box; margin-bottom:10px; font-size:1.5rem; text-align:center;">
         <div class="btn-container">
-            <button class="btn btn-salary" onclick="updateMoney('salary')">🧧 領取俸祿</button>
-            <button class="btn btn-out" onclick="handleExpense()">💸 肆意噴錢</button>
-            <button class="btn btn-in" onclick="updateMoney('in')">📜 強制充公</button>
+            <button class="btn btn-salary" onclick="doAction('salary')">🧧 領取俸祿</button>
+            <button class="btn btn-out" onclick="doAction('out')">💸 肆意噴錢</button>
+            <button class="btn btn-in" onclick="doAction('in')">📜 強制充公</button>
             <button class="btn btn-nav" onclick="switchPage('page-stats')">📊 揮霍分析</button>
             <button class="btn btn-gold" onclick="switchPage('page-plan')">📅 充公計畫</button>
         </div>
@@ -80,198 +69,166 @@
 
     <div id="page-stats" class="page">
         <h3>📊 帳務審核中心</h3>
-        <canvas id="outPieChart" style="margin-bottom:10px;"></canvas>
-        <h4>💸 支出明細 (點擊修正/刪除)</h4>
+        <canvas id="outPieChart" style="max-height: 200px;"></canvas>
+        <h4 style="text-align:left; margin:10px 0 5px;">💸 支出明細 (點擊修正)</h4>
         <div class="detail-list" id="expense-list"></div>
-        <h4>📜 充公明細 (點擊撤銷)</h4>
+        <h4 style="text-align:left; margin:10px 0 5px;">📜 充公紀錄 (點擊刪除)</h4>
         <div class="detail-list" id="saved-list"></div>
-        <button class="btn" style="background:#bbb; width:100%; margin-top:20px;" onclick="switchPage('page-home')">返回主頁</button>
+        <button class="btn" style="background:#bbb; width:100%; margin-top:15px;" onclick="switchPage('page-home')">返回主頁</button>
     </div>
 
     <div id="page-plan" class="page">
         <h3>📅 年度充公計畫</h3>
         <div id="month-grid" style="display:grid; gap:10px; max-height:400px; overflow-y:auto;"></div>
-        <button class="btn" style="background:#bbb; width:100%; margin-top:20px;" onclick="switchPage('page-home')">返回主頁</button>
+        <button class="btn" style="background:#bbb; width:100%; margin-top:15px;" onclick="switchPage('page-home')">返回主頁</button>
     </div>
 </div>
 
 <script>
-    const roasts = [
-        "尚書大人，這筆白銀充公後，國庫終於不是空的了。",
-        "充公得好！反正在你手上也會被噴掉。",
-        "這點錢也叫充公？你是看不起本尚書嗎？",
-        "領俸祿了！尚書大人，別剛領完就去揮霍啊。",
-        "看到俸祿入庫，微臣終於不用擔心尚書大人餓死了。",
-        "今日噴錢如流水，今日充公如擠奶，尚書大人自重啊！",
-        "尚書大人，這筆白銀充公後，國庫終於有點樣子了。",
-        "白銀入庫，國泰民安；肆意噴錢，提頭來見！",
-        "警告：國庫水位過低，請立即強制充公！",
-        "尚書進場視察！充公金額不滿意，通通拉出去斬了！",
-        "再噴錢，下個月就把你的薪俸全部充公！",
-        "充公成功！雖然不多，但勉強算你有一點點良心。"
-    ];
-
+    const roasts = ["尚書大人，這筆白銀充公後，國庫終於不是空的了。","充公得好！反正在你手上也會被噴掉。","這點錢也叫充公？你是看不起本尚書嗎？","領俸祿了！尚書大人，別剛領完就去揮霍啊。","看到俸祿入庫，微臣終於不用擔心尚書大人餓死了。","今日噴錢如流水，今日充公如擠奶，尚書大人自重啊！","白銀入庫，國泰民安；肆意噴錢，提頭來見！","警告：國庫水位過低，請立即強制充公！","充公成功！雖然不多，但勉強算你有一點點良心。"];
+    
     let WEB_APP_URL = localStorage.getItem('user_gas_url') || "";
     let db = { total: 0, monthlyGoal: 5000, years: {}, categories: ["伙食", "交通", "娛樂", "購物", "其他"] };
     let outPieChart = null;
 
-    const selYear = document.getElementById('sel-year');
-    const selMonth = document.getElementById('sel-month');
-    for(let y=2024; y<=2030; y++) { selYear.add(new Option(y + "年", y)); }
-    for(let m=1; m<=12; m++) { selMonth.add(new Option(m + "月", m)); }
-    const now = new Date();
-    selYear.value = now.getFullYear();
-    selMonth.value = now.getMonth() + 1;
+    // 初始化下拉選單
+    const sy = document.getElementById('sel-year');
+    const sm = document.getElementById('sel-month');
+    for(let y=2024; y<=2030; y++) sy.add(new Option(y+"年", y));
+    for(let m=1; m<=12; m++) sm.add(new Option(m+"月", m));
+    sy.value = new Date().getFullYear();
+    sm.value = new Date().getMonth() + 1;
 
-    function getMonthData(y, m) {
+    function getM() {
+        const y = sy.value, m = sm.value;
+        if(!db.years) db.years = {};
         if(!db.years[y]) db.years[y] = { months: {} };
         if(!db.years[y].months[m]) db.years[y].months[m] = { salary:0, out:0, saved:0, outDetails:{}, savedDetails:[] };
-        return db.years[y].months[m];
+        const data = db.years[y].months[m];
+        if(!data.outDetails) data.outDetails = {};
+        if(!data.savedDetails) data.savedDetails = [];
+        return data;
     }
 
-    function refreshRoast() {
-        const r = roasts[Math.floor(Math.random() * roasts.length)];
-        document.getElementById('quote-display').innerText = r;
-    }
+    async function doAction(type) {
+        const amt = parseInt(document.getElementById('amount').value);
+        if(!amt || amt <= 0) return Swal.fire("數額呢？", "請輸入大於0的數字", "warning");
+        const mData = getM();
 
-    function updateMoney(type, category = null) {
-        const amtInput = document.getElementById('amount');
-        const amt = parseInt(amtInput.value);
-        if (isNaN(amt) || amt <= 0) return;
-
-        const mData = getMonthData(selYear.value, selMonth.value);
-
-        if (type === 'salary') {
+        if(type === 'salary') {
             db.total += amt;
-            mData.salary = (mData.salary || 0) + amt;
-        } else if (type === 'out') {
+            mData.salary += amt;
+        } else if(type === 'in') {
+            if(db.total < amt) return Swal.fire("國庫空虛", "沒錢充公，快去領俸祿", "error");
             db.total -= amt;
-            mData.out = (mData.out || 0) + amt;
-            if(!mData.outDetails) mData.outDetails = {};
-            mData.outDetails[category] = (mData.outDetails[category] || 0) + amt;
-        } else if (type === 'in') {
-            if (db.total < amt) return Swal.fire("餘額不足", "你想空手套白狼嗎？", "error");
+            mData.saved += amt;
+            mData.savedDetails.push({amt: amt, date: new Date().toLocaleDateString()});
+        } else if(type === 'out') {
+            const { value: cat } = await Swal.fire({
+                title: '選個類別',
+                input: 'select',
+                inputOptions: db.categories.reduce((a,v)=>{a[v]=v;return a;},{}),
+                showCancelButton: true
+            });
+            if(!cat) return;
             db.total -= amt;
-            mData.saved = (mData.saved || 0) + amt;
-            if(!mData.savedDetails) mData.savedDetails = [];
-            mData.savedDetails.push({ amt: amt, date: new Date().toLocaleDateString() });
+            mData.out += amt;
+            mData.outDetails[cat] = (mData.outDetails[cat] || 0) + amt;
         }
-        amtInput.value = '';
-        refreshRoast(); 
+        document.getElementById('amount').value = '';
+        document.getElementById('quote-display').innerText = roasts[Math.floor(Math.random()*roasts.length)];
         syncData('push');
     }
 
-    async function handleExpense() {
-        const amt = parseInt(document.getElementById('amount').value);
-        if (isNaN(amt) || amt <= 0) return Swal.fire("提示", "請輸入數額", "warning");
-        
-        const { value: cat } = await Swal.fire({
-            title: '選擇噴錢類別',
-            input: 'select',
-            inputOptions: db.categories.reduce((o, i) => { o[i] = i; return o; }, {}),
-            showCancelButton: true
-        });
-        if (cat) updateMoney('out', cat);
-    }
-
-    async function manageExpenseItem(cat) {
-        const mData = getMonthData(selYear.value, selMonth.value);
-        const amt = mData.outDetails[cat] || 0;
+    async function editOut(cat) {
+        const mData = getM();
+        const amt = mData.outDetails[cat];
         const { value: action } = await Swal.fire({
-            title: `管理「${cat}」`, text: `$${amt.toLocaleString()}`,
+            title: cat, text: `$${amt}`,
             showDenyButton: true, showCancelButton: true,
-            confirmButtonText: '修正分類', denyButtonText: '刪除此帳', cancelButtonText: '取消'
+            confirmButtonText: '換分類', denyButtonText: '刪除', cancelButtonText: '算了吧'
         });
-        if (action) {
-            const { value: newCat } = await Swal.fire({
-                title: '選擇新分類', input: 'select',
-                inputOptions: db.categories.reduce((o, i) => { o[i] = i; return o; }, {}),
-                showCancelButton: true
+        if(action) {
+            const { value: ncat } = await Swal.fire({
+                title: '換到哪？', input: 'select',
+                inputOptions: db.categories.reduce((a,v)=>{a[v]=v;return a;},{})
             });
-            if (newCat && newCat !== cat) {
-                mData.outDetails[newCat] = (mData.outDetails[newCat] || 0) + amt;
+            if(ncat) {
+                mData.outDetails[ncat] = (mData.outDetails[ncat]||0) + amt;
                 delete mData.outDetails[cat];
                 syncData('push');
             }
-        } else if (action === false) {
+        } else if(action === false) {
             db.total += amt; mData.out -= amt; delete mData.outDetails[cat];
             syncData('push');
         }
     }
 
-    async function deleteSavedItem(index) {
-        const mData = getMonthData(selYear.value, selMonth.value);
-        const item = mData.savedDetails[index];
-        const result = await Swal.fire({
-            title: '撤銷充公？', text: `退回 $${item.amt.toLocaleString()} 至國庫`,
-            icon: 'warning', showCancelButton: true
-        });
-        if (result.isConfirmed) {
+    async function delIn(idx) {
+        const mData = getM();
+        const item = mData.savedDetails[idx];
+        const res = await Swal.fire({ title: '撤銷充公？', text: `$${item.amt}`, showCancelButton: true });
+        if(res.isConfirmed) {
             db.total += item.amt; mData.saved -= item.amt;
-            mData.savedDetails.splice(index, 1);
+            mData.savedDetails.splice(idx, 1);
             syncData('push');
         }
     }
 
     function updateUI() {
-        const mData = getMonthData(selYear.value, selMonth.value);
-        document.getElementById('balance-display').innerText = '$ ' + (db.total || 0).toLocaleString();
-        document.getElementById('cur-salary').innerText = '$ ' + (mData.salary || 0).toLocaleString();
-        document.getElementById('cur-saved').innerText = '$ ' + (mData.saved || 0).toLocaleString();
-        document.getElementById('cur-out').innerText = '$ ' + (mData.out || 0).toLocaleString();
-        const prog = ((mData.saved / (db.monthlyGoal || 5000)) * 100).toFixed(0);
-        document.getElementById('cur-progress').innerText = (isNaN(prog) ? 0 : Math.min(100, prog)) + '%';
+        const mData = getM();
+        document.getElementById('balance-display').innerText = '$ '+db.total.toLocaleString();
         
-        const exList = document.getElementById('expense-list');
-        exList.innerHTML = '';
-        const details = mData.outDetails || {};
-        if (mData.out > 0 && Object.keys(details).length === 0) details["未分類舊帳"] = mData.out;
-        for (let cat in details) {
-            const div = document.createElement('div'); div.className = 'detail-item';
-            div.onclick = () => manageExpenseItem(cat);
-            div.innerHTML = `<span>${cat}</span><span style="color:var(--out)">$${details[cat].toLocaleString()} ⚙️</span>`;
-            exList.appendChild(div);
+        const grid = document.getElementById('stats-grid');
+        grid.innerHTML = `
+            <div class="stat-card"><span class="stat-label">俸祿</span><span class="stat-val" style="color:var(--salary)">$${mData.salary.toLocaleString()}</span></div>
+            <div class="stat-card"><span class="stat-label">充公</span><span class="stat-val" style="color:var(--in)">$${mData.saved.toLocaleString()}</span></div>
+            <div class="stat-card"><span class="stat-label">支出</span><span class="stat-val" style="color:var(--out)">$${mData.out.toLocaleString()}</span></div>
+            <div class="stat-card"><span class="stat-label">進度</span><span class="stat-val" style="color:var(--gold)">${Math.min(100,((mData.saved/db.monthlyGoal)*100)).toFixed(0)}%</span></div>
+        `;
+
+        const exList = document.getElementById('expense-list'); exList.innerHTML = '';
+        for(let c in mData.outDetails) {
+            const d = document.createElement('div'); d.className='detail-item'; d.onclick=()=>editOut(c);
+            d.innerHTML = `<span>${c}</span><span style="color:var(--out)">$${mData.outDetails[c].toLocaleString()} ⚙️</span>`;
+            exList.appendChild(d);
         }
 
-        const svList = document.getElementById('saved-list');
-        svList.innerHTML = '';
-        (mData.savedDetails || []).forEach((item, idx) => {
-            const div = document.createElement('div'); div.className = 'detail-item';
-            div.onclick = () => deleteSavedItem(idx);
-            div.innerHTML = `<span>${item.date}</span><span style="color:var(--in)">$${item.amt.toLocaleString()} 🗑️</span>`;
-            svList.appendChild(div);
+        const svList = document.getElementById('saved-list'); svList.innerHTML = '';
+        mData.savedDetails.forEach((v, i)=>{
+            const d = document.createElement('div'); d.className='detail-item'; d.onclick=()=>delIn(i);
+            d.innerHTML = `<span>${v.date}</span><span style="color:var(--in)">$${v.amt.toLocaleString()} 🗑️</span>`;
+            svList.appendChild(d);
         });
-        if (document.getElementById('page-stats').classList.contains('active')) renderCharts();
+
+        if(document.getElementById('page-stats').classList.contains('active')) {
+            const ctx = document.getElementById('outPieChart');
+            if(outPieChart) outPieChart.destroy();
+            const labs = Object.keys(mData.outDetails);
+            outPieChart = new Chart(ctx, {
+                type:'doughnut',
+                data: { labels: labs.length?labs:["無"], datasets:[{data: labs.length?Object.values(mData.outDetails):[1], backgroundColor:['#ff4757','#ffa502','#2ed573','#4b7bec','#a55eea']}] }
+            });
+        }
     }
 
-    function renderCharts() {
-        const mData = getMonthData(selYear.value, selMonth.value);
-        const details = mData.outDetails || {};
-        if (outPieChart) outPieChart.destroy();
-        outPieChart = new Chart(document.getElementById('outPieChart'), {
-            type: 'doughnut',
-            data: {
-                labels: Object.keys(details).length ? Object.keys(details) : ["無支出"],
-                datasets: [{ data: Object.values(details).length ? Object.values(details) : [1], backgroundColor: ['#ff4757', '#ffa502', '#2ed573', '#1e90ff', '#a55eea'] }]
-            }
-        });
-    }
-
-    async function syncData(type) {
-        if (!WEB_APP_URL) return;
-        document.getElementById('loading').style.display = 'flex';
+    async function syncData(mode) {
+        if(!WEB_APP_URL) return updateUI();
+        document.getElementById('loading').style.display='flex';
         try {
-            if (type === 'push') await fetch(WEB_APP_URL, { method: 'POST', body: JSON.stringify({ data: db }) });
-            else { const res = await fetch(WEB_APP_URL); const json = await res.json(); if(json.years) db = json; }
+            if(mode==='push') await fetch(WEB_APP_URL, {method:'POST', body:JSON.stringify({data:db})});
+            else { const r = await fetch(WEB_APP_URL); const j = await r.json(); if(j.years) db = j; }
             updateUI();
-        } catch (e) { console.error(e); }
-        document.getElementById('loading').style.display = 'none';
+        } catch(e) { console.error(e); }
+        document.getElementById('loading').style.display='none';
     }
 
-    function handleDateChange() { updateUI(); }
-    function switchPage(id) { document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); document.getElementById(id).classList.add('active'); updateUI(); }
-    async function openSettings() { const { value: url } = await Swal.fire({ title: '基地網址', input: 'text', inputValue: WEB_APP_URL }); if (url) { localStorage.setItem('user_gas_url', url); WEB_APP_URL = url; syncData('pull'); } }
-    window.onload = () => { if (WEB_APP_URL) syncData('pull'); else updateUI(); refreshRoast(); };
+    function switchPage(p) { document.querySelectorAll('.page').forEach(x=>x.classList.remove('active')); document.getElementById(p).classList.add('active'); updateUI(); }
+    async function openSettings() { 
+        const {value: u} = await Swal.fire({title:'基地網址', input:'text', inputValue:WEB_APP_URL}); 
+        if(u!==undefined){ WEB_APP_URL=u; localStorage.setItem('user_gas_url', u); syncData('pull'); } 
+    }
+    window.onload = () => syncData('pull');
 </script>
 </body>
 </html>
