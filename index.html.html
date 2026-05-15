@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>理財生存戰 3.1 雲端版</title>
+    <style>
+        :root { --bg: #f0f2f5; --out: #ff4757; --in: #2ed573; --gold: #ffa502; }
+        body { font-family: -apple-system, sans-serif; background: var(--bg); margin: 0; padding: 20px; display: flex; justify-content: center; }
+        .card { background: white; padding: 20px; border-radius: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 100%; max-width: 400px; text-align: center; }
+        .page { display: none; }
+        .page.active { display: block; }
+        .balance-box { background: #f8f9fa; padding: 15px; border-radius: 15px; margin-bottom: 15px; position: relative; }
+        .balance-amount { font-size: 2rem; font-weight: bold; }
+        .weekly-stats { display: flex; justify-content: space-around; font-size: 0.8rem; color: #666; margin-top: 10px; }
+        .stat-item span { display: block; font-weight: bold; font-size: 1rem; }
+        .btn-container { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+        .btn { border: none; padding: 12px; border-radius: 12px; font-weight: bold; color: white; cursor: pointer; }
+        .btn-out { background: var(--out); }
+        .btn-in { background: var(--in); }
+        .btn-challenge { background: var(--gold); grid-column: span 2; margin-top: 10px; }
+        .grid-container { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; margin-top: 15px; max-height: 350px; overflow-y: auto; padding: 5px; border: 1px solid #eee; border-radius: 10px; }
+        .grid-item { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; background: #eee; border-radius: 5px; font-size: 0.7rem; cursor: pointer; }
+        .grid-item.done { background: var(--in); color: white; }
+        #roast-msg { margin-top: 15px; font-size: 0.85rem; color: #444; min-height: 3em; display: flex; align-items: center; justify-content: center; background: #fffbe6; border-radius: 10px; padding: 10px; }
+        .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.8); display: none; align-items: center; justify-content: center; z-index: 1000; }
+    </style>
+</head>
+<body>
+
+<div id="loading" class="loading-overlay">同步中...</div>
+
+<div class="card">
+    <div id="page-home" class="page active">
+        <div class="balance-box">
+            <div style="font-size: 0.8rem; color: #888;">雲端總餘額</div>
+            <div class="balance-amount" id="balance-display">$ 0</div>
+            <div class="weekly-stats">
+                <div class="stat-item">本週存入<span id="weekly-in" style="color:var(--in)">$ 0</span></div>
+                <div class="stat-item">本週噴掉<span id="weekly-out" style="color:var(--out)">$ 0</span></div>
+            </div>
+        </div>
+        
+        <input type="number" id="amount" placeholder="輸入金額..." inputmode="numeric" style="width:100%; padding:15px; border-radius:12px; border:2px solid #eee; box-sizing:border-box; margin-bottom:10px; font-size:1.2rem; text-align:center;">
+        
+        <div class="btn-container">
+            <button class="btn btn-out" onclick="updateMoney('out')">💸 噴錢</button>
+            <button class="btn btn-in" onclick="updateMoney('in')">💰 存錢</button>
+            <button class="btn btn-challenge" onclick="switchPage('page-365')">🏆 進入 365 天存錢挑戰</button>
+        </div>
+        <div id="roast-msg">正在載入雲端數據...</div>
+        <button onclick="syncData('pull')" style="background:none; border:none; color:#999; font-size:0.7rem; margin-top:20px; text-decoration:underline;">手動同步雲端</button>
+    </div>
+
+    <div id="page-365" class="page">
+        <h3>🏆 365天存錢挑戰</h3>
+        <div class="grid-container" id="challenge-grid"></div>
+        <button class="btn" style="background:#666; width:100%; margin-top:15px;" onclick="switchPage('page-home')">返回首頁</button>
+    </div>
+</div>
+
+<script>
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbx59I-Z2YsC8XfLZkqdVkIKUGS6If6ju-6KxN9zyqzWgqNaM8NotFm4aFcqkYGBCWnWMw/exec";
+    
+    let db = { total: 0, wIn: 0, wOut: 0, doneDays: [] };
+
+    const outRoasts = ["這週的你，是錢包的殺手。", "存的沒噴的多，是在做功德？", "錢包空空，腦袋也空空了嗎？"];
+    const inCheers = ["天啊！你居然贏了錢包！", "理財小天才就是你。", "存錢的你散發著富有的光芒。"];
+
+    async function syncData(type) {
+        document.getElementById('loading').style.display = 'flex';
+        try {
+            if (type === 'push') {
+                await fetch(WEB_APP_URL, { method: 'POST', body: JSON.stringify({ data: db }) });
+            } else {
+                const res = await fetch(WEB_APP_URL);
+                const cloudData = await res.json();
+                if (cloudData.total !== undefined) db = cloudData;
+            }
+            updateUI();
+        } catch (e) {
+            alert("同步失敗，請檢查網路或部署設定");
+        }
+        document.getElementById('loading').style.display = 'none';
+    }
+
+    function switchPage(id) {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        if(id === 'page-365') renderGrid();
+    }
+
+    function renderGrid() {
+        const grid = document.getElementById('challenge-grid');
+        grid.innerHTML = '';
+        for (let i = 1; i <= 365; i++) {
+            const div = document.createElement('div');
+            div.className = 'grid-item' + (db.doneDays.includes(i) ? ' done' : '');
+            div.innerText = i;
+            div.onclick = () => {
+                if (db.doneDays.includes(i)) return alert("這格存過了！");
+                if (confirm(`存入 $${i} 嗎？`)) {
+                    db.doneDays.push(i);
+                    db.total += i;
+                    db.wIn += i;
+                    syncData('push');
+                    renderGrid();
+                }
+            };
+            grid.appendChild(div);
+        }
+    }
+
+    function updateMoney(type) {
+        const amt = parseInt(document.getElementById('amount').value);
+        if (isNaN(amt) || amt <= 0) return;
+        if (type === 'out') {
+            db.total -= amt;
+            db.wOut += amt;
+            document.getElementById('roast-msg').innerText = "噴了 $" + amt + "。錢包在滴血...";
+        } else {
+            db.total += amt;
+            db.wIn += amt;
+            document.getElementById('roast-msg').innerText = "存入 $" + amt + "。優秀喔！";
+        }
+        document.getElementById('amount').value = '';
+        syncData('push');
+    }
+
+    function updateUI() {
+        document.getElementById('balance-display').innerText = '$ ' + db.total.toLocaleString();
+        document.getElementById('weekly-in').innerText = '$ ' + db.wIn.toLocaleString();
+        document.getElementById('weekly-out').innerText = '$ ' + db.wOut.toLocaleString();
+        if(document.getElementById('roast-msg').innerText.includes("載入")) {
+            document.getElementById('roast-msg').innerText = "數據已同步，可以開始敗家...我是說理財了。";
+        }
+    }
+
+    // 初始載入
+    syncData('pull');
+</script>
+
+</body>
+</html>
