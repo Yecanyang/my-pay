@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>理財生存戰 5.5 - 戶部尚書版</title>
-    
+    <title>戶部尚書：理財生存戰</title>
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="戶部尚書">
@@ -12,14 +11,14 @@
     
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
-        :root { --bg: #f0f2f5; --out: #ff4757; --in: #2ed573; --gold: #ffa502; }
+        :root { --bg: #f0f2f5; --out: #ff4757; --in: #2ed573; --gold: #ffa502; --silver: #576574; }
         body { font-family: -apple-system, "Microsoft JhengHei", sans-serif; background: var(--bg); margin: 0; padding: 20px; display: flex; justify-content: center; }
         .card { background: white; padding: 20px; border-radius: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 100%; max-width: 400px; text-align: center; position: relative; }
         .settings-icon { position: absolute; top: 20px; right: 20px; font-size: 1.5rem; cursor: pointer; z-index: 999; padding: 5px; opacity: 0.6; }
         .page { display: none; }
         .page.active { display: block; }
         .balance-box { background: #f8f9fa; padding: 15px; border-radius: 15px; margin-bottom: 15px; border: 1px solid #eee; }
-        .balance-amount { font-size: 2.2rem; font-weight: bold; color: #2c3e50; }
+        .balance-amount { font-size: 2.2rem; font-weight: bold; color: var(--silver); }
         .weekly-stats { display: flex; justify-content: space-around; font-size: 0.85rem; color: #666; margin-top: 10px; }
         .stat-item span { display: block; font-weight: bold; font-size: 1.1rem; margin-top: 3px; }
         .btn-container { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 10px; }
@@ -38,63 +37,64 @@
 </head>
 <body>
 
-<div id="loading" class="loading-overlay">⌛ 同步中...別催！</div>
+<div id="loading" class="loading-overlay">⌛ 奏報傳遞中...別催！</div>
 
 <div class="card">
     <div class="settings-icon" onclick="openSettings()">⚙️</div>
 
     <div id="page-home" class="page active">
         <div class="balance-box">
-            <div style="font-size: 0.85rem; color: #888;">國庫財富進度</div>
+            <div style="font-size: 0.85rem; color: #888;">國庫白銀總量</div>
             <div class="balance-amount" id="balance-display">$ 0</div>
             <div class="weekly-stats">
-                <div class="stat-item">本週存入<span id="weekly-in" style="color:var(--in)">$ 0</span></div>
-                <div class="stat-item">本週噴掉<span id="weekly-out" style="color:var(--out)">$ 0</span></div>
+                <div class="stat-item">本週充公<span id="weekly-in" style="color:var(--in)">$ 0</span></div>
+                <div class="stat-item">本週噴錢<span id="weekly-out" style="color:var(--out)">$ 0</span></div>
             </div>
         </div>
-        <input type="number" id="amount" placeholder="今天又要噴多少？" inputmode="numeric" style="width:100%; padding:15px; border-radius:15px; border:2px solid #eee; box-sizing:border-box; margin-bottom:10px; font-size:1.3rem; text-align:center; outline:none;">
+        <input type="number" id="amount" placeholder="多少白銀要充公？" inputmode="numeric" style="width:100%; padding:15px; border-radius:15px; border:2px solid #eee; box-sizing:border-box; margin-bottom:10px; font-size:1.3rem; text-align:center; outline:none;">
         <div class="btn-container">
-            <button class="btn btn-out" onclick="updateMoney('out')">💸 又噴錢了</button>
-            <button class="btn btn-in" onclick="updateMoney('in')">💰 勉強存點</button>
-            <button class="btn btn-challenge" onclick="switchPage('page-365')">🏆 國庫挑戰格</button>
+            <button class="btn btn-out" onclick="updateMoney('out')">💸 肆意噴錢</button>
+            <button class="btn btn-in" onclick="updateMoney('in')">📜 強制充公</button>
+            <button class="btn btn-challenge" onclick="switchPage('page-365')">🏆 365天白銀挑戰</button>
         </div>
-        <div id="roast-msg">正在載入尚書大人的語錄...</div>
+        <div id="roast-msg">尚書大人，國庫開張，請先設定基地網址。</div>
     </div>
 
     <div id="page-365" class="page">
-        <h3 style="margin-bottom: 5px;">🏆 365天存錢挑戰</h3>
-        <p style="font-size: 0.75rem; color: #999; margin-top: 0;">點擊格子入庫，點錯了可以取消。</p>
+        <h3 style="margin-bottom: 5px;">🏆 365天白銀挑戰</h3>
+        <p style="font-size: 0.75rem; color: #999; margin-top: 0;">點擊格子強制充公，這都是國家的！</p>
         <div class="grid-container" id="challenge-grid"></div>
-        <button class="btn" style="background:#bbb; width:100%; margin-top:15px;" onclick="switchPage('page-home')">返回首頁</button>
+        <button class="btn" style="background:#bbb; width:100%; margin-top:15px;" onclick="switchPage('page-home')">微服出巡 (回首頁)</button>
     </div>
 </div>
 
 <script>
+    const roasts = [
+        "尚書大人，這筆白銀充公後，國庫終於不是空的了。",
+        "充公得好！反正在你手上也會被噴掉。",
+        "這點錢也叫充公？你是看不起本尚書嗎？",
+        "今日噴錢如流水，今日充公如擠奶，尚書大人自重啊！",
+        "警告：偵測到貧窮氣息，請立即繳納充公白銀補血！",
+        "白銀入庫，國泰民安；肆意噴錢，只能睡草席。",
+        "尚書進場視察！充公金額不滿意，通通拉出去斬了！",
+        "再噴錢，下個月就把你的薪俸全部充公！",
+        "充公成功！雖然不多，但勉強算你有一點點良心。",
+        "每一兩充公的白銀，都是你對未來買房的幻想。"
+    ];
+
     let WEB_APP_URL = localStorage.getItem('user_gas_url') || "";
     let db = { total: 0, wIn: 0, wOut: 0, doneDays: [] };
-
-    // 尚書語錄庫
-    const roasts = [
-        "今天也要當個精明的小財主喔！(才怪)",
-        "尚書大人，國庫空虛，您還有臉看？",
-        "別看了，裡面的錢連買塊雞排都要考慮。",
-        "今天噴錢了嗎？我看你是噴得很爽吧。",
-        "存錢這種事，我看你撐不過三天。",
-        "你的財富自由進度...目前大約是自由了 0.0001%。",
-        "警告：偵測到貧窮氣息，請立即存錢補血！",
-        "每一塊錢都是你對未來買房的幻想，雖然只是幻想。",
-        "戶部尚書進場視察！大家快把空空的錢箱藏好！",
-        "再噴錢，你連出門吃飯都只能吃土了。"
-    ];
 
     async function openSettings() {
         const { value: url } = await Swal.fire({
             title: '基地連線設定',
             input: 'text',
-            inputLabel: '請貼入您的 GAS 網址',
+            inputLabel: '請貼入您的 Google Apps Script 網址',
             inputValue: WEB_APP_URL,
             showCancelButton: true,
-            confirmButtonColor: '#2ed573'
+            confirmButtonColor: '#2ed573',
+            confirmButtonText: '儲存',
+            inputPlaceholder: 'https://script.google.com/...'
         });
         if (url && url.includes("script.google.com")) {
             localStorage.setItem('user_gas_url', url);
@@ -118,12 +118,24 @@
         document.getElementById('loading').style.display = 'none';
     }
 
+    function updateMoney(type) {
+        const amtInput = document.getElementById('amount');
+        const amt = parseInt(amtInput.value);
+        if (isNaN(amt) || amt <= 0) return;
+
+        if (type === 'out') {
+            db.total -= amt; db.wOut += amt;
+        } else {
+            db.total += amt; db.wIn += amt;
+        }
+        amtInput.value = '';
+        syncData('push');
+    }
+
     function updateUI() {
         document.getElementById('balance-display').innerText = '$ ' + (db.total || 0).toLocaleString();
         document.getElementById('weekly-in').innerText = '$ ' + (db.wIn || 0).toLocaleString();
         document.getElementById('weekly-out').innerText = '$ ' + (db.wOut || 0).toLocaleString();
-        
-        // 隨機換語錄
         const randomRoast = roasts[Math.floor(Math.random() * roasts.length)];
         document.getElementById('roast-msg').innerText = randomRoast;
     }
@@ -143,14 +155,15 @@
             div.className = 'grid-item' + (isDone ? ' done' : '');
             div.innerText = i;
             div.onclick = async () => {
-                if (!WEB_APP_URL) return Swal.fire({ title: '等等', text: '請先設定基地網址！', icon: 'warning' });
+                if (!WEB_APP_URL) return Swal.fire({ title: '尚書請留步', text: '請先設定基地網址！', icon: 'warning' });
                 if (isDone) {
                     const result = await Swal.fire({
-                        title: '取消存錢？',
-                        text: `要取消第 ${i} 天的 $${i} 嗎？`,
+                        title: '要吐出錢嗎？',
+                        text: `確定要撤銷第 ${i} 天的 $${i} 充公紀錄？`,
+                        icon: 'question',
                         showCancelButton: true,
                         confirmButtonText: '是的，點錯了',
-                        cancelButtonText: '留著'
+                        cancelButtonText: '沒事，留著'
                     });
                     if (result.isConfirmed) {
                         db.doneDays = db.doneDays.filter(day => day !== i);
@@ -160,12 +173,12 @@
                     }
                 } else {
                     const result = await Swal.fire({
-                        title: '入庫確認',
-                        text: `確定要存入第 ${i} 天的 $${i} 嗎？`,
+                        title: '強制充公！',
+                        text: `確定要將第 ${i} 天的 $${i} 白銀充公嗎？`,
                         icon: 'success',
                         showCancelButton: true,
-                        confirmButtonText: '確定存入',
-                        cancelButtonText: '先不要'
+                        confirmButtonText: '立即充公',
+                        cancelButtonText: '微臣再想想'
                     });
                     if (result.isConfirmed) {
                         db.doneDays.push(i);
@@ -179,16 +192,7 @@
         }
     }
 
-    function updateMoney(type) {
-        const amtInput = document.getElementById('amount');
-        const amt = parseInt(amtInput.value);
-        if (isNaN(amt) || amt <= 0) return;
-        if (type === 'out') { db.total -= amt; db.wOut += amt; } else { db.total += amt; db.wIn += amt; }
-        amtInput.value = '';
-        syncData('push');
-    }
-
-    window.onload = () => { if (WEB_APP_URL) syncData('pull'); else updateUI(); };
+    window.onload = () => { if (WEB_APP_URL) syncData('pull'); };
 </script>
 </body>
 </html>
