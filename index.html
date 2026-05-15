@@ -3,11 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>理財生存戰 5.5</title>
+    <title>理財生存戰 5.5 - 戶部尚書版</title>
+    
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="理財生存戰">
-    <link rel="apple-touch-icon" href="111.png"> 
+    <meta name="apple-mobile-web-app-title" content="戶部尚書">
+    
+    <link rel="apple-touch-icon" href="image.png"> 
     
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
@@ -32,12 +34,7 @@
         .grid-item.done { background: var(--in); color: white; border-color: var(--in); font-weight: bold; box-shadow: 0 4px 10px rgba(46, 213, 115, 0.3); }
         #roast-msg { margin-top: 15px; font-size: 0.9rem; color: #444; min-height: 3.5em; display: flex; align-items: center; justify-content: center; background: #fffbe6; border-radius: 12px; padding: 12px; line-height: 1.4; border: 1px solid #ffe58f; }
         .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.8); display: none; align-items: center; justify-content: center; z-index: 10000; }
-        
-        /* 自定義 SweetAlert2 樣式 */
-        .swal2-popup { border-radius: 25px !important; font-family: inherit !important; }
-        /* 金幣雨動畫樣式 */
-        .swal2-icon.swal2-success .swal2-success-ring::after { content: "💰"; font-size: 2rem; position: absolute; top: -20px; left: -20px; animation: coinRain 0.6s ease-in-out forwards; }
-        @keyframes coinRain { 0% { transform: translateY(-50px) scale(0); opacity: 0; } 100% { transform: translateY(0) scale(1.5); opacity: 1; } }
+        .swal2-popup { border-radius: 25px !important; }
     </style>
 </head>
 <body>
@@ -49,7 +46,7 @@
 
     <div id="page-home" class="page active">
         <div class="balance-box">
-            <div style="font-size: 0.85rem; color: #888;">我的財富自由進度</div>
+            <div style="font-size: 0.85rem; color: #888;">國庫財富進度</div>
             <div class="balance-amount" id="balance-display">$ 0</div>
             <div class="weekly-stats">
                 <div class="stat-item">本週存入<span id="weekly-in" style="color:var(--in)">$ 0</span></div>
@@ -60,16 +57,16 @@
         <div class="btn-container">
             <button class="btn btn-out" onclick="updateMoney('out')">💸 又噴錢了</button>
             <button class="btn btn-in" onclick="updateMoney('in')">💰 勉強存點</button>
-            <button class="btn btn-challenge" onclick="switchPage('page-365')">🏆 進去挑戰 (抖)</button>
+            <button class="btn btn-challenge" onclick="switchPage('page-365')">🏆 國庫挑戰格</button>
         </div>
-        <div id="roast-msg">今天也要當個精明的小財主喔！(才怪)</div>
+        <div id="roast-msg">正在載入尚書大人的語錄...</div>
     </div>
 
     <div id="page-365" class="page">
         <h3 style="margin-bottom: 5px;">🏆 365天存錢挑戰</h3>
-        <p style="font-size: 0.75rem; color: #999; margin-top: 0;">點擊格子勉強存點錢，點錯了可以取消喔～</p>
+        <p style="font-size: 0.75rem; color: #999; margin-top: 0;">點擊格子入庫，點錯了可以取消。</p>
         <div class="grid-container" id="challenge-grid"></div>
-        <button class="btn" style="background:#bbb; width:100%; margin-top:15px;" onclick="switchPage('page-home')">滾回首頁</button>
+        <button class="btn" style="background:#bbb; width:100%; margin-top:15px;" onclick="switchPage('page-home')">返回首頁</button>
     </div>
 </div>
 
@@ -77,26 +74,33 @@
     let WEB_APP_URL = localStorage.getItem('user_gas_url') || "";
     let db = { total: 0, wIn: 0, wOut: 0, doneDays: [] };
 
+    // 尚書語錄庫
+    const roasts = [
+        "今天也要當個精明的小財主喔！(才怪)",
+        "尚書大人，國庫空虛，您還有臉看？",
+        "別看了，裡面的錢連買塊雞排都要考慮。",
+        "今天噴錢了嗎？我看你是噴得很爽吧。",
+        "存錢這種事，我看你撐不過三天。",
+        "你的財富自由進度...目前大約是自由了 0.0001%。",
+        "警告：偵測到貧窮氣息，請立即存錢補血！",
+        "每一塊錢都是你對未來買房的幻想，雖然只是幻想。",
+        "戶部尚書進場視察！大家快把空空的錢箱藏好！",
+        "再噴錢，你連出門吃飯都只能吃土了。"
+    ];
+
     async function openSettings() {
         const { value: url } = await Swal.fire({
             title: '基地連線設定',
             input: 'text',
-            inputLabel: '請貼入您的 Google Apps Script 網址',
+            inputLabel: '請貼入您的 GAS 網址',
             inputValue: WEB_APP_URL,
             showCancelButton: true,
-            confirmButtonColor: '#2ed573',
-            confirmButtonText: '儲存',
-            cancelButtonText: '取消',
-            inputPlaceholder: 'https://script.google.com/...'
+            confirmButtonColor: '#2ed573'
         });
-        if (url) {
-            if (url.includes("script.google.com")) {
-                localStorage.setItem('user_gas_url', url);
-                WEB_APP_URL = url;
-                syncData('pull');
-            } else {
-                Swal.fire({ title: '哎呀', text: '網址好像怪怪的喔！', icon: 'error' });
-            }
+        if (url && url.includes("script.google.com")) {
+            localStorage.setItem('user_gas_url', url);
+            WEB_APP_URL = url;
+            syncData('pull');
         }
     }
 
@@ -115,6 +119,16 @@
         document.getElementById('loading').style.display = 'none';
     }
 
+    function updateUI() {
+        document.getElementById('balance-display').innerText = '$ ' + (db.total || 0).toLocaleString();
+        document.getElementById('weekly-in').innerText = '$ ' + (db.wIn || 0).toLocaleString();
+        document.getElementById('weekly-out').innerText = '$ ' + (db.wOut || 0).toLocaleString();
+        
+        // 隨機換語錄
+        const randomRoast = roasts[Math.floor(Math.random() * roasts.length)];
+        document.getElementById('roast-msg').innerText = randomRoast;
+    }
+
     function switchPage(id) {
         document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
         document.getElementById(id).classList.add('active');
@@ -124,10 +138,6 @@
     function renderGrid() {
         const grid = document.getElementById('challenge-grid');
         grid.innerHTML = '';
-        const roastsIn = ["哎喲，居然捨得存錢？", "這點錢也存？", "確定不拿去吃好料？", "太陽從西邊出來了？"];
-        const roastsOut = ["這筆錢你不要了嗎？", "取消？想偷噴錢吧！", "沒人性！", "不想財富自由了？"];
-        const roastsInSuccess = ["存入成功！雖然不多...", "數據已同步！總金額沒變多少...", "恭喜存錢！很快就會噴掉吧..."];
-
         for (let i = 1; i <= 365; i++) {
             const isDone = db.doneDays.includes(i);
             const div = document.createElement('div');
@@ -135,14 +145,12 @@
             div.innerText = i;
             div.onclick = async () => {
                 if (!WEB_APP_URL) return Swal.fire({ title: '等等', text: '請先設定基地網址！', icon: 'warning' });
-                
                 if (isDone) {
                     const result = await Swal.fire({
-                        title: '要取消嗎？',
-                        text: `您要取消第 ${i} 天的 $${i} 存款嗎？`,
-                        icon: 'question',
+                        title: '取消存錢？',
+                        text: `要取消第 ${i} 天的 $${i} 嗎？`,
                         showCancelButton: true,
-                        confirmButtonText: '是的，我點錯了',
+                        confirmButtonText: '是的，點錯了',
                         cancelButtonText: '留著'
                     });
                     if (result.isConfirmed) {
@@ -150,12 +158,11 @@
                         db.total -= i; db.wIn -= i;
                         syncData('push');
                         renderGrid();
-                        Swal.fire({ title: '取消成功！', text: roastsOut[Math.floor(Math.random() * roastsOut.length)], icon: 'info' });
                     }
                 } else {
                     const result = await Swal.fire({
-                        title: '太棒了！(才怪)',
-                        text: `確定要存入第 ${i} 天的 $${i} 嗎？${roastsIn[Math.floor(Math.random() * roastsIn.length)]}`,
+                        title: '入庫確認',
+                        text: `確定要存入第 ${i} 天的 $${i} 嗎？`,
                         icon: 'success',
                         showCancelButton: true,
                         confirmButtonText: '確定存入',
@@ -166,7 +173,6 @@
                         db.total += i; db.wIn += i;
                         syncData('push');
                         renderGrid();
-                        Swal.fire({ title: '存入成功！💰', text: roastsInSuccess[Math.floor(Math.random() * roastsInSuccess.length)], icon: 'success' });
                     }
                 }
             };
@@ -183,13 +189,7 @@
         syncData('push');
     }
 
-    function updateUI() {
-        document.getElementById('balance-display').innerText = '$ ' + (db.total || 0).toLocaleString();
-        document.getElementById('weekly-in').innerText = '$ ' + (db.wIn || 0).toLocaleString();
-        document.getElementById('weekly-out').innerText = '$ ' + (db.wOut || 0).toLocaleString();
-    }
-
-    window.onload = () => { if (WEB_APP_URL) syncData('pull'); };
+    window.onload = () => { if (WEB_APP_URL) syncData('pull'); else updateUI(); };
 </script>
 </body>
 </html>
