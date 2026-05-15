@@ -3,58 +3,76 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>理財生存戰 4.1</title>
+    <title>理財生存戰 5.0</title>
     <style>
         :root { --bg: #f0f2f5; --out: #ff4757; --in: #2ed573; --gold: #ffa502; }
         body { font-family: -apple-system, sans-serif; background: var(--bg); margin: 0; padding: 20px; display: flex; justify-content: center; }
         .card { background: white; padding: 20px; border-radius: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 100%; max-width: 400px; text-align: center; position: relative; }
-        .settings-icon { position: absolute; top: 15px; right: 15px; font-size: 1.5rem; cursor: pointer; z-index: 999; padding: 10px; }
+        
+        /* 設定圖示 */
+        .settings-icon { position: absolute; top: 20px; right: 20px; font-size: 1.5rem; cursor: pointer; z-index: 999; padding: 5px; }
+        
         .page { display: none; }
         .page.active { display: block; }
+        
         .balance-box { background: #f8f9fa; padding: 15px; border-radius: 15px; margin-bottom: 15px; }
-        .balance-amount { font-size: 2rem; font-weight: bold; }
-        .weekly-stats { display: flex; justify-content: space-around; font-size: 0.8rem; color: #666; margin-top: 10px; }
-        .stat-item span { display: block; font-weight: bold; font-size: 1rem; }
-        .btn-container { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
-        .btn { border: none; padding: 12px; border-radius: 12px; font-weight: bold; color: white; cursor: pointer; }
+        .balance-amount { font-size: 2.2rem; font-weight: bold; color: #2c3e50; }
+        
+        .weekly-stats { display: flex; justify-content: space-around; font-size: 0.85rem; color: #666; margin-top: 10px; }
+        .stat-item span { display: block; font-weight: bold; font-size: 1.1rem; margin-top: 3px; }
+
+        .btn-container { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 10px; }
+        .btn { border: none; padding: 14px; border-radius: 15px; font-weight: bold; color: white; cursor: pointer; font-size: 1rem; transition: 0.2s; }
+        .btn:active { transform: scale(0.95); opacity: 0.8; }
         .btn-out { background: var(--out); }
         .btn-in { background: var(--in); }
-        .btn-challenge { background: var(--gold); grid-column: span 2; margin-top: 10px; }
-        .grid-container { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; margin-top: 15px; max-height: 350px; overflow-y: auto; padding: 5px; border: 1px solid #eee; border-radius: 10px; }
-        .grid-item { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; background: #eee; border-radius: 5px; font-size: 0.7rem; cursor: pointer; }
-        .grid-item.done { background: var(--in); color: white; }
-        #roast-msg { margin-top: 15px; font-size: 0.85rem; color: #444; min-height: 3em; display: flex; align-items: center; justify-content: center; background: #fffbe6; border-radius: 10px; padding: 10px; }
+        .btn-challenge { background: var(--gold); grid-column: span 2; margin-top: 5px; }
+
+        .grid-container { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin-top: 15px; max-height: 400px; overflow-y: auto; padding: 8px; border: 1px solid #eee; border-radius: 15px; background: #fafafa; }
+        .grid-item { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; background: #fff; border: 1px solid #ddd; border-radius: 8px; font-size: 0.8rem; cursor: pointer; color: #888; }
+        .grid-item.done { background: var(--in); color: white; border-color: var(--in); font-weight: bold; }
+
+        #roast-msg { margin-top: 15px; font-size: 0.9rem; color: #444; min-height: 3.5em; display: flex; align-items: center; justify-content: center; background: #fffbe6; border-radius: 12px; padding: 12px; line-height: 1.4; border: 1px solid #ffe58f; }
+        
+        /* 彈窗樣式 */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); align-items: center; justify-content: center; z-index: 9999; }
-        .modal-content { background: white; padding: 25px; border-radius: 20px; width: 85%; max-width: 320px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+        .modal-content { background: white; padding: 25px; border-radius: 20px; width: 85%; max-width: 320px; text-align: left; }
+        .modal h3 { margin-top: 0; }
         .modal input { width: 100%; padding: 12px; margin: 15px 0; box-sizing: border-box; border: 2px solid #eee; border-radius: 10px; font-size: 0.9rem; }
-        .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.8); display: none; align-items: center; justify-content: center; z-index: 10000; }
+
+        .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.8); display: none; align-items: center; justify-content: center; z-index: 10000; font-weight: bold; color: #333; }
     </style>
 </head>
 <body>
 
-<div id="loading" class="loading-overlay">處理中...</div>
+<div id="loading" class="loading-overlay">⏳ 雲端同步中...</div>
 
 <div class="card">
     <div class="settings-icon" onclick="toggleModal(true)">⚙️</div>
+
     <div id="page-home" class="page active">
         <div class="balance-box">
-            <div style="font-size: 0.8rem; color: #888;">雲端帳戶總額</div>
+            <div style="font-size: 0.85rem; color: #888;">我的財富自由進度</div>
             <div class="balance-amount" id="balance-display">$ 0</div>
             <div class="weekly-stats">
                 <div class="stat-item">本週存入<span id="weekly-in" style="color:var(--in)">$ 0</span></div>
                 <div class="stat-item">本週噴掉<span id="weekly-out" style="color:var(--out)">$ 0</span></div>
             </div>
         </div>
-        <input type="number" id="amount" placeholder="輸入金額..." inputmode="numeric" style="width:100%; padding:15px; border-radius:12px; border:2px solid #eee; box-sizing:border-box; margin-bottom:10px; font-size:1.2rem; text-align:center;">
+        
+        <input type="number" id="amount" placeholder="輸入金額..." inputmode="numeric" style="width:100%; padding:15px; border-radius:15px; border:2px solid #eee; box-sizing:border-box; margin-bottom:10px; font-size:1.3rem; text-align:center; outline:none;">
+        
         <div class="btn-container">
             <button class="btn btn-out" onclick="updateMoney('out')">💸 噴錢</button>
             <button class="btn btn-in" onclick="updateMoney('in')">💰 存錢</button>
-            <button class="btn btn-challenge" onclick="switchPage('page-365')">🏆 進入 365 挑戰</button>
+            <button class="btn btn-challenge" onclick="switchPage('page-365')">🏆 進入 365 天挑戰</button>
         </div>
-        <div id="roast-msg">點擊右上角 ⚙️ 設定雲端網址</div>
+        <div id="roast-msg">歡迎回來！今天也要努力不亂噴錢喔～</div>
     </div>
+
     <div id="page-365" class="page">
-        <h3>🏆 365天存錢挑戰</h3>
+        <h3 style="margin-bottom: 5px;">🏆 365天存錢挑戰</h3>
+        <p style="font-size: 0.7rem; color: #999; margin-top: 0;">點擊格子存錢，再次點擊可取消</p>
         <div class="grid-container" id="challenge-grid"></div>
         <button class="btn" style="background:#666; width:100%; margin-top:15px;" onclick="switchPage('page-home')">返回首頁</button>
     </div>
@@ -62,10 +80,10 @@
 
 <div id="settings-modal" class="modal">
     <div class="modal-content">
-        <h3 style="margin-top:0;">基地設定</h3>
-        <p style="font-size: 0.8rem; color: #666; text-align:left;">貼入 Google Apps Script 網址：</p>
+        <h3>基地連線設定</h3>
+        <p style="font-size: 0.8rem; color: #666;">請貼入您的 Google Apps Script 網址：</p>
         <input type="text" id="url-input" placeholder="https://script.google.com/...">
-        <button class="btn btn-in" style="width: 100%; margin-bottom:10px;" onclick="saveSettings()">儲存並連動</button>
+        <button class="btn btn-in" style="width: 100%; margin-bottom: 10px;" onclick="saveSettings()">儲存並同步</button>
         <button class="btn" style="width: 100%; background: #eee; color: #666;" onclick="toggleModal(false)">關閉</button>
     </div>
 </div>
@@ -74,12 +92,13 @@
     let WEB_APP_URL = localStorage.getItem('user_gas_url') || "";
     let db = { total: 0, wIn: 0, wOut: 0, doneDays: [] };
 
+    // 開關設定視窗
     function toggleModal(show) {
-        console.log("Modal status:", show); // 除錯用
         document.getElementById('settings-modal').style.display = show ? 'flex' : 'none';
         if (show) document.getElementById('url-input').value = WEB_APP_URL;
     }
 
+    // 儲存設定
     function saveSettings() {
         const newUrl = document.getElementById('url-input').value.trim();
         if (newUrl.includes("script.google.com")) {
@@ -88,66 +107,104 @@
             toggleModal(false);
             syncData('pull');
         } else {
-            alert("請貼上正確的 GAS 網址！");
+            alert("網址格式看起來不對喔，請重新確認！");
         }
     }
 
+    // 雲端同步
     async function syncData(type) {
-        if (!WEB_APP_URL) return;
+        if (!WEB_APP_URL) {
+            document.getElementById('roast-msg').innerText = "⚠️ 請先點擊右上角⚙️設定雲端網址，否則資料無法存檔喔！";
+            return;
+        }
         document.getElementById('loading').style.display = 'flex';
         try {
             if (type === 'push') {
                 await fetch(WEB_APP_URL, { method: 'POST', body: JSON.stringify({ data: db }) });
             } else {
                 const res = await fetch(WEB_APP_URL);
-                db = await res.json();
+                const cloudData = await res.json();
+                if (cloudData.total !== undefined) db = cloudData;
             }
             updateUI();
-        } catch (e) { console.error(e); }
+        } catch (e) {
+            console.error(e);
+            document.getElementById('roast-msg').innerText = "❌ 同步失敗！請檢查網址是否有誤。";
+        }
         document.getElementById('loading').style.display = 'none';
     }
 
+    // 切換頁面
     function switchPage(id) {
         document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
         document.getElementById(id).classList.add('active');
         if(id === 'page-365') renderGrid();
     }
 
+    // 渲染 365 格子 (含取消功能)
     function renderGrid() {
         const grid = document.getElementById('challenge-grid');
         grid.innerHTML = '';
         for (let i = 1; i <= 365; i++) {
+            const isDone = db.doneDays.includes(i);
             const div = document.createElement('div');
-            div.className = 'grid-item' + (db.doneDays.includes(i) ? ' done' : '');
+            div.className = 'grid-item' + (isDone ? ' done' : '');
             div.innerText = i;
             div.onclick = () => {
-                if (db.doneDays.includes(i)) return;
-                if (confirm(`存入 $${i}？`)) {
-                    db.doneDays.push(i); db.total += i; db.wIn += i;
-                    syncData('push'); renderGrid();
+                if (!WEB_APP_URL) return alert("請先設定雲端網址！");
+                
+                if (isDone) {
+                    if (confirm(`這筆 $${i} 點錯了嗎？要取消並扣除金額嗎？`)) {
+                        db.doneDays = db.doneDays.filter(day => day !== i);
+                        db.total -= i; 
+                        db.wIn -= i;
+                        syncData('push');
+                        renderGrid();
+                    }
+                } else {
+                    if (confirm(`確認存入 $${i}？`)) {
+                        db.doneDays.push(i); 
+                        db.total += i; 
+                        db.wIn += i;
+                        syncData('push');
+                        renderGrid();
+                    }
                 }
             };
             grid.appendChild(div);
         }
     }
 
+    // 更新金額 (噴錢/存錢)
     function updateMoney(type) {
-        const amt = parseInt(document.getElementById('amount').value);
+        if (!WEB_APP_URL) return alert("請先點擊右上角⚙️設定雲端網址！");
+        const amtInput = document.getElementById('amount');
+        const amt = parseInt(amtInput.value);
         if (isNaN(amt) || amt <= 0) return;
-        if (type === 'out') { db.total -= amt; db.wOut += amt; } 
-        else { db.total += amt; db.wIn += amt; }
-        document.getElementById('amount').value = '';
+
+        if (type === 'out') {
+            db.total -= amt;
+            db.wOut += amt;
+        } else {
+            db.total += amt;
+            db.wIn += amt;
+        }
+        amtInput.value = '';
         syncData('push');
     }
 
+    // 更新畫面顯示
     function updateUI() {
         document.getElementById('balance-display').innerText = '$ ' + (db.total || 0).toLocaleString();
         document.getElementById('weekly-in').innerText = '$ ' + (db.wIn || 0).toLocaleString();
         document.getElementById('weekly-out').innerText = '$ ' + (db.wOut || 0).toLocaleString();
-        document.getElementById('roast-msg').innerText = "雲端同步成功！";
+        document.getElementById('roast-msg').innerText = "數據已與雲端同步。目前存錢進度穩定！";
     }
 
-    window.onload = () => { if (WEB_APP_URL) syncData('pull'); };
+    // 初始載入
+    window.onload = () => {
+        if (WEB_APP_URL) syncData('pull');
+    };
 </script>
 
 </body>
