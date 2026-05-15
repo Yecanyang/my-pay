@@ -3,217 +3,262 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>戶部尚書：國庫分析版</title>
+    <title>戶部尚書：永續國庫版</title>
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="戶部尚書">
-    <link rel="apple-touch-icon" href="image.png"> 
-    
+    <link rel="apple-touch-icon" href="111.png"> 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        :root { --bg: #f0f2f5; --out: #ff4757; --in: #2ed573; --gold: #ffa502; --silver: #576574; --salary: #a55eea; }
-        body { font-family: -apple-system, "Microsoft JhengHei", sans-serif; background: var(--bg); margin: 0; padding: 20px; display: flex; justify-content: center; }
+        :root { --bg: #f0f2f5; --out: #ff4757; --in: #2ed573; --gold: #ffa502; --silver: #576574; --salary: #a55eea; --blue: #4b7bec; }
+        body { font-family: -apple-system, sans-serif; background: var(--bg); margin: 0; padding: 10px; display: flex; justify-content: center; }
         .card { background: white; padding: 20px; border-radius: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 100%; max-width: 400px; text-align: center; position: relative; }
-        .settings-icon { position: absolute; top: 20px; right: 20px; font-size: 1.5rem; cursor: pointer; z-index: 999; padding: 5px; opacity: 0.6; }
+        
+        /* 頂部導航與日期選擇 */
+        .top-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; background: #fff; padding: 5px; }
+        .date-selector { display: flex; gap: 5px; align-items: center; }
+        select { border: 1px solid #ddd; padding: 5px 10px; border-radius: 10px; font-size: 0.9rem; outline: none; background: #f8f9fa; }
+
         .page { display: none; }
         .page.active { display: block; }
+        
         .balance-box { background: #f8f9fa; padding: 15px; border-radius: 15px; margin-bottom: 15px; border: 1px solid #eee; }
-        .balance-amount { font-size: 2.2rem; font-weight: bold; color: var(--silver); }
-        .weekly-stats { display: flex; justify-content: space-around; font-size: 0.85rem; color: #666; margin-top: 10px; }
-        .stat-item span { display: block; font-weight: bold; font-size: 1.1rem; margin-top: 3px; }
-        .btn-container { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 10px; }
-        .btn { border: none; padding: 14px; border-radius: 15px; font-weight: bold; color: white; cursor: pointer; font-size: 1rem; transition: 0.2s; }
-        .btn:active { transform: scale(0.95); }
-        .btn-salary { background: var(--salary); grid-column: span 2; margin-bottom: 5px; }
+        .balance-amount { font-size: 2.2rem; font-weight: bold; color: var(--silver); margin: 5px 0; }
+        .main-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+        .stat-card { background: white; padding: 10px; border-radius: 12px; border: 1px solid #f0f0f0; }
+        .stat-label { font-size: 0.75rem; color: #888; }
+        .stat-val { font-weight: bold; font-size: 0.95rem; display: block; margin-top: 2px; }
+
+        .btn-container { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
+        .btn { border: none; padding: 14px; border-radius: 15px; font-weight: bold; color: white; cursor: pointer; font-size: 0.95rem; transition: 0.2s; }
+        .btn-salary { background: var(--salary); grid-column: span 2; }
         .btn-out { background: var(--out); }
         .btn-in { background: var(--in); }
-        .btn-chart { background: #4b7bec; grid-column: span 2; margin-top: 5px; }
-        .btn-challenge { background: var(--gold); grid-column: span 2; margin-top: 5px; }
-        .grid-container { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin-top: 15px; max-height: 350px; overflow-y: auto; padding: 8px; border: 1px solid #eee; border-radius: 15px; background: #fafafa; }
-        .grid-item { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; background: #fff; border: 1px solid #ddd; border-radius: 10px; font-size: 0.85rem; cursor: pointer; transition: 0.3s; }
-        .grid-item.done { background: var(--in); color: white; border-color: var(--in); font-weight: bold; }
-        #roast-msg { margin-top: 15px; font-size: 0.9rem; color: #444; min-height: 3.5em; display: flex; align-items: center; justify-content: center; background: #fffbe6; border-radius: 12px; padding: 12px; line-height: 1.4; border: 1px solid #ffe58f; }
+        .btn-nav { background: var(--blue); }
+        .btn-gold { background: var(--gold); }
+        
+        .month-grid { display: grid; grid-template-columns: 1fr; gap: 10px; margin-top: 15px; max-height: 350px; overflow-y: auto; }
+        .month-item { background: #f9f9f9; border-radius: 15px; padding: 12px; text-align: left; }
+        .progress-bar { background: #eee; border-radius: 10px; height: 8px; width: 100%; overflow: hidden; margin: 5px 0; }
+        .progress-fill { background: var(--in); height: 100%; }
+
+        #roast-msg { margin-top: 15px; font-size: 0.85rem; color: #444; background: #fffbe6; border-radius: 12px; padding: 12px; border: 1px solid #ffe58f; min-height: 40px; }
         .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.8); display: none; align-items: center; justify-content: center; z-index: 10000; }
-        canvas { max-width: 100%; margin-top: 10px; }
     </style>
 </head>
 <body>
 
-<div id="loading" class="loading-overlay">⌛ 正在核對帳目...</div>
+<div id="loading" class="loading-overlay">⌛ 正在奏報...</div>
 
 <div class="card">
-    <div class="settings-icon" onclick="openSettings()">⚙️</div>
+    <div class="top-nav">
+        <div class="date-selector">
+            <select id="sel-year" onchange="handleDateChange()"></select>
+            <select id="sel-month" onchange="handleDateChange()">
+                <option value="1">1月</option><option value="2">2月</option><option value="3">3月</option>
+                <option value="4">4月</option><option value="5">5月</option><option value="6">6月</option>
+                <option value="7">7月</option><option value="8">8月</option><option value="9">9月</option>
+                <option value="10">10月</option><option value="11">11月</option><option value="12">12月</option>
+            </select>
+        </div>
+        <div class="settings-icon" onclick="openSettings()" style="cursor:pointer; font-size:1.2rem;">⚙️</div>
+    </div>
 
     <div id="page-home" class="page active">
         <div class="balance-box">
-            <div style="font-size: 0.85rem; color: #888;">國庫白銀總量</div>
+            <div class="stat-label">當前國庫白銀總量</div>
             <div class="balance-amount" id="balance-display">$ 0</div>
-            <div class="weekly-stats">
-                <div class="stat-item">累計充公<span id="weekly-in" style="color:var(--in)">$ 0</span></div>
-                <div class="stat-item">累計噴錢<span id="weekly-out" style="color:var(--out)">$ 0</span></div>
+            <div class="main-stats">
+                <div class="stat-card">
+                    <span class="stat-label">所選月俸祿</span>
+                    <span class="stat-val" id="cur-salary" style="color:var(--salary)">$ 0</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-label">所選月充公</span>
+                    <span class="stat-val" id="cur-saved" style="color:var(--in)">$ 0</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-label">所選月噴錢</span>
+                    <span class="stat-val" id="cur-out" style="color:var(--out)">$ 0</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-label">當月進度</span>
+                    <span class="stat-val" id="cur-progress" style="color:var(--gold)">0%</span>
+                </div>
             </div>
         </div>
-        <input type="number" id="amount" placeholder="白銀數額..." inputmode="numeric" style="width:100%; padding:15px; border-radius:15px; border:2px solid #eee; box-sizing:border-box; margin-bottom:10px; font-size:1.3rem; text-align:center; outline:none;">
+        <input type="number" id="amount" placeholder="數額..." inputmode="numeric" style="width:100%; padding:15px; border-radius:15px; border:2px solid #eee; box-sizing:border-box; margin-bottom:10px; font-size:1.3rem; text-align:center;">
         <div class="btn-container">
             <button class="btn btn-salary" onclick="updateMoney('salary')">🧧 領取俸祿</button>
             <button class="btn btn-out" onclick="updateMoney('out')">💸 肆意噴錢</button>
             <button class="btn btn-in" onclick="updateMoney('in')">📜 強制充公</button>
-            <button class="btn btn-chart" onclick="switchPage('page-stats')">📊 揮霍程度分析</button>
-            <button class="btn btn-challenge" onclick="switchPage('page-365')">🏆 365天白銀挑戰</button>
+            <button class="btn btn-nav" onclick="switchPage('page-stats')">📊 揮霍分析</button>
+            <button class="btn btn-gold" onclick="switchPage('page-plan')">📅 充公計畫</button>
         </div>
-        <div id="roast-msg">尚書大人，請先設定基地網址。</div>
+        <div id="roast-msg">尚書大人，請指示。</div>
     </div>
 
     <div id="page-stats" class="page">
-        <h3>📊 國庫揮霍程度報告</h3>
-        <div style="font-size: 0.9rem; color: #666; margin-bottom: 10px;">
-            本月評價：<span id="spending-rank" style="font-weight: bold; color: var(--out);">尚未結算</span>
-        </div>
-        <canvas id="myChart"></canvas>
-        <div style="margin-top: 20px; font-size: 0.85rem; text-align: left; background: #f9f9f9; padding: 10px; border-radius: 10px;">
-            * 統計邏輯：以「領取俸祿」為基準，計算「噴錢」佔比。充公則視為國庫建設，不計入揮霍。
-        </div>
-        <button class="btn" style="background:#bbb; width:100%; margin-top:15px;" onclick="switchPage('page-home')">回宮</button>
+        <h3>📊 國庫財務分析</h3>
+        <canvas id="pieChart" style="margin-bottom:20px;"></canvas>
+        <hr border="0" style="border-top:1px solid #eee;">
+        <h3 style="margin-top:20px;">📈 <span id="chart-year-label"></span> 俸祿比較</h3>
+        <canvas id="barChart"></canvas>
+        <button class="btn" style="background:#bbb; width:100%; margin-top:20px;" onclick="switchPage('page-home')">回宮</button>
     </div>
 
-    <div id="page-365" class="page">
-        <h3 style="margin-bottom: 5px;">🏆 365天白銀挑戰</h3>
-        <div class="grid-container" id="challenge-grid"></div>
+    <div id="page-plan" class="page">
+        <h3>📅 <span id="plan-year-label"></span> 充公進度</h3>
+        <button onclick="setGoal()" style="font-size: 0.75rem; padding: 5px 12px; border-radius: 10px; border: 1px solid #ccc; background: white; margin-bottom: 10px;">設定每月目標</button>
+        <div class="month-grid" id="month-grid"></div>
         <button class="btn" style="background:#bbb; width:100%; margin-top:15px;" onclick="switchPage('page-home')">回宮</button>
     </div>
 </div>
 
 <script>
-    const roasts = [
-        "尚書大人，這筆白銀充公後，國庫終於有點樣字了。",
-        "領俸祿了！別剛領完就去揮霍，微臣看著呢。",
-        "今日噴錢如流水，尚書大人是想去當乞丐嗎？",
-        "白銀入庫，國泰民安；肆意噴錢，抄家滅門！",
-        "警告：國庫水位過低，請立即強制充公！",
-        "充公成功！雖然不多，但勉強算你還有良心。"
-    ];
-
+    const roasts = ["領俸祿了！別剛領完就噴光！", "今日噴錢如流水，尚書大人自重。", "國庫充盈，天下太平。", "加薪了嗎？充公比例是不是該調高了？"];
     let WEB_APP_URL = localStorage.getItem('user_gas_url') || "";
-    let db = { total: 0, wIn: 0, wOut: 0, salary: 0, doneDays: [] };
-    let myChart = null;
+    // 萬年數據結構: db.years[2026].months[5] = { salary, out, saved }
+    let db = { total: 0, monthlyGoal: 5000, years: {} };
+    let pieChart = null, barChart = null;
 
-    async function openSettings() {
-        const { value: url } = await Swal.fire({
-            title: '基地設定',
-            input: 'text',
-            inputValue: WEB_APP_URL,
-            showCancelButton: true,
-            confirmButtonText: '儲存'
-        });
-        if (url) {
-            localStorage.setItem('user_gas_url', url);
-            WEB_APP_URL = url;
-            syncData('pull');
+    // 初始化日期選擇器
+    const now = new Date();
+    const selYear = document.getElementById('sel-year');
+    const selMonth = document.getElementById('sel-month');
+    for(let y=2024; y<=2030; y++) {
+        let opt = new Option(y + "年", y);
+        if(y === now.getFullYear()) opt.selected = true;
+        selYear.add(opt);
+    }
+    selMonth.value = now.getMonth() + 1;
+
+    function getYearData(y) {
+        if(!db.years[y]) {
+            db.years[y] = { months: {} };
+            for(let m=1; m<=12; m++) db.years[y].months[m] = { salary: 0, out: 0, saved: 0 };
         }
+        return db.years[y];
     }
 
     async function syncData(type) {
         if (!WEB_APP_URL) return;
         document.getElementById('loading').style.display = 'flex';
         try {
-            if (type === 'push') {
-                await fetch(WEB_APP_URL, { method: 'POST', body: JSON.stringify({ data: db }) });
-            } else {
-                const res = await fetch(WEB_APP_URL);
-                db = await res.json();
-                if (!db.salary) db.salary = 0; // 相容舊版本
-            }
+            if (type === 'push') { await fetch(WEB_APP_URL, { method: 'POST', body: JSON.stringify({ data: db }) }); }
+            else { const res = await fetch(WEB_APP_URL); db = await res.json(); if(!db.years) db.years = {}; }
             updateUI();
         } catch (e) { console.error(e); }
         document.getElementById('loading').style.display = 'none';
     }
 
+    function handleDateChange() { updateUI(); }
+
     function updateMoney(type) {
-        const amtInput = document.getElementById('amount');
-        const amt = parseInt(amtInput.value);
+        const amt = parseInt(document.getElementById('amount').value);
         if (isNaN(amt) || amt <= 0) return;
+        const y = selYear.value, m = selMonth.value;
+        const yData = getYearData(y);
 
         if (type === 'salary') {
             db.total += amt;
-            db.salary += amt; // 紀錄總俸祿
+            yData.months[m].salary += amt;
         } else if (type === 'out') {
             db.total -= amt;
-            db.wOut += amt; // 紀錄噴錢
-        } else {
-            db.total += amt;
-            db.wIn += amt; // 一般充公
+            yData.months[m].out += amt;
+        } else if (type === 'in') {
+            // 充公檢查：總白銀是否夠充公？
+            if (db.total < amt) return Swal.fire("國庫告急", "可用白銀不足！", "error");
+            yData.months[m].saved += amt;
+            // 注意：充公是國庫內的劃分，不扣除 total
         }
-        amtInput.value = '';
+        document.getElementById('amount').value = '';
         syncData('push');
     }
 
     function updateUI() {
+        const y = selYear.value, m = selMonth.value;
+        const yData = getYearData(y);
+        const mData = yData.months[m];
+
         document.getElementById('balance-display').innerText = '$ ' + (db.total || 0).toLocaleString();
-        document.getElementById('weekly-in').innerText = '$ ' + (db.wIn || 0).toLocaleString();
-        document.getElementById('weekly-out').innerText = '$ ' + (db.wOut || 0).toLocaleString();
-        const randomRoast = roasts[Math.floor(Math.random() * roasts.length)];
-        document.getElementById('roast-msg').innerText = randomRoast;
-        if (document.getElementById('page-stats').classList.contains('active')) updateChart();
+        document.getElementById('cur-salary').innerText = '$ ' + (mData.salary).toLocaleString();
+        document.getElementById('cur-saved').innerText = '$ ' + (mData.saved).toLocaleString();
+        document.getElementById('cur-out').innerText = '$ ' + (mData.out).toLocaleString();
+        
+        const prog = ((mData.saved / db.monthlyGoal) * 100).toFixed(0);
+        document.getElementById('cur-progress').innerText = Math.min(100, prog) + '%';
+        document.getElementById('roast-msg').innerText = roasts[Math.floor(Math.random() * roasts.length)];
+        
+        if (document.activeElement.id !== 'sel-year' && document.activeElement.id !== 'sel-month') {
+            if (document.getElementById('page-stats').classList.contains('active')) renderCharts();
+            if (document.getElementById('page-plan').classList.contains('active')) renderPlan();
+        }
+    }
+
+    function renderCharts() {
+        const y = selYear.value, m = selMonth.value;
+        const mData = getYearData(y).months[m];
+        document.getElementById('chart-year-label').innerText = y + "年";
+
+        if (pieChart) pieChart.destroy();
+        pieChart = new Chart(document.getElementById('pieChart'), {
+            type: 'pie',
+            data: {
+                labels: ['本月結餘', '本月噴錢', '本月充公'],
+                datasets: [{ 
+                    data: [Math.max(0, mData.salary - mData.out - mData.saved), mData.out, mData.saved], 
+                    backgroundColor: ['#2ed573', '#ff4757', '#ffa502'] 
+                }]
+            }
+        });
+
+        if (barChart) barChart.destroy();
+        const salaries = Object.values(getYearData(y).months).map(mo => mo.salary);
+        barChart = new Chart(document.getElementById('barChart'), {
+            type: 'bar',
+            data: {
+                labels: ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'],
+                datasets: [{ label: '月俸祿', data: salaries, backgroundColor: '#a55eea' }]
+            }
+        });
+    }
+
+    function renderPlan() {
+        const y = selYear.value;
+        document.getElementById('plan-year-label').innerText = y + "年";
+        const grid = document.getElementById('month-grid');
+        grid.innerHTML = '';
+        for (let i = 1; i <= 12; i++) {
+            const val = getYearData(y).months[i].saved;
+            const percent = Math.min(100, (val / db.monthlyGoal * 100)).toFixed(0);
+            const item = document.createElement('div');
+            item.className = 'month-item';
+            item.innerHTML = `
+                <div style="display:flex; justify-content:space-between; font-size:0.9rem; font-weight:bold;">
+                    <span>${i}月 徵收單</span><span style="color:var(--in)">${percent}%</span>
+                </div>
+                <div class="progress-bar"><div class="progress-fill" style="width: ${percent}%"></div></div>
+                <div style="font-size:0.7rem; color:#888;">已充公: $${val.toLocaleString()} / 目標: $${db.monthlyGoal.toLocaleString()}</div>
+            `;
+            grid.appendChild(item);
+        }
     }
 
     function switchPage(id) {
         document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
         document.getElementById(id).classList.add('active');
-        if (id === 'page-stats') updateChart();
-        if (id === 'page-365') renderGrid();
+        updateUI();
     }
 
-    function updateChart() {
-        const ctx = document.getElementById('myChart').getContext('2d');
-        const spending = db.wOut;
-        const savings = Math.max(0, db.salary - db.wOut);
-        const ratio = db.salary > 0 ? (spending / db.salary * 100).toFixed(1) : 0;
-        
-        let rank = "尚無俸祿紀錄";
-        if (db.salary > 0) {
-            if (ratio < 20) rank = "國之棟樑 (極度節儉)";
-            else if (ratio < 50) rank = "清廉正直 (正常開銷)";
-            else if (ratio < 80) rank = "奢靡成風 (注意噴錢)";
-            else rank = "昏庸無道 (準備抄家)";
-        }
-        document.getElementById('spending-rank').innerText = rank + ` (${ratio}%)`;
-
-        if (myChart) myChart.destroy();
-        myChart = new Chart(ctx, {
-            type: 'pie',
-            data: {
-                labels: ['剩下的白銀', '噴掉的錢'],
-                datasets: [{
-                    data: [savings, spending],
-                    backgroundColor: ['#2ed573', '#ff4757']
-                }]
-            },
-            options: { responsive: true }
-        });
+    async function openSettings() {
+        const { value: url } = await Swal.fire({ title: '基地設定', input: 'text', inputValue: WEB_APP_URL });
+        if (url) { localStorage.setItem('user_gas_url', url); WEB_APP_URL = url; syncData('pull'); }
     }
 
-    function renderGrid() {
-        const grid = document.getElementById('challenge-grid');
-        grid.innerHTML = '';
-        for (let i = 1; i <= 365; i++) {
-            const isDone = db.doneDays.includes(i);
-            const div = document.createElement('div');
-            div.className = 'grid-item' + (isDone ? ' done' : '');
-            div.innerText = i;
-            div.onclick = async () => {
-                if (isDone) {
-                    db.doneDays = db.doneDays.filter(day => day !== i);
-                    db.total -= i; db.wIn -= i;
-                } else {
-                    db.doneDays.push(i);
-                    db.total += i; db.wIn += i;
-                }
-                syncData('push');
-                renderGrid();
-            };
-            grid.appendChild(div);
-        }
+    async function setGoal() {
+        const { value: goal } = await Swal.fire({ title: '設定每月充公目標', input: 'number', inputValue: db.monthlyGoal });
+        if (goal) { db.monthlyGoal = parseInt(goal); syncData('push'); }
     }
 
     window.onload = () => { if (WEB_APP_URL) syncData('pull'); };
