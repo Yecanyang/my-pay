@@ -3,18 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>戶部尚書 V15.6 - 自由奔放版</title>
-    <link rel="apple-touch-icon" href="111.png">
-    <link rel="icon" href="111.png">
+    <title>戶部尚書 V15.7 - 名目官制版</title>
+    <link rel="apple-touch-icon" href="image.png">
+    <link rel="icon" href="image.png">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root { --bg: #f0f2f5; --out: #ff4757; --in: #2ed573; --gold: #ffa502; --silver: #576574; --salary: #a55eea; --blue: #4b7bec; }
         body { font-family: -apple-system, sans-serif; background: var(--bg); margin: 0; padding: 10px; display: flex; justify-content: center; }
-        .card { background: white; padding: 20px; border-radius: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 100%; max-width: 400px; text-align: center; min-height: 90vh; }
+        .card { background: white; padding: 20px; border-radius: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 100%; max-width: 400px; text-align: center; min-height: 90vh; position: relative; }
         .top-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-        .quote-box { font-style: italic; color: #e67e22; font-size: 0.85rem; margin-bottom: 15px; min-height: 3rem; display: flex; align-items: center; justify-content: center; background: #fff5e6; border-radius: 15px; padding: 8px; border: 1px dashed #ffd39b; }
+        .quote-box { font-style: italic; color: #e67e22; font-size: 0.85rem; margin-bottom: 15px; min-height: 3.5rem; display: flex; align-items: center; justify-content: center; background: #fff5e6; border-radius: 15px; padding: 8px; border: 1px dashed #ffd39b; }
         select { border: 1px solid #ddd; padding: 8px; border-radius: 12px; background: #f8f9fa; outline: none; }
         .page { display: none; }
         .page.active { display: block; }
@@ -34,11 +34,13 @@
         .detail-list { text-align: left; margin: 5px 0; max-height: 200px; overflow-y: auto; padding: 5px; background: #fafafa; border-radius: 15px; }
         .detail-item { display: flex; justify-content: space-between; padding: 12px; border-bottom: 1px solid #eee; font-size: 0.95rem; cursor: pointer; }
         .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.9); display: none; align-items: center; justify-content: center; z-index: 10000; }
+        /* 設定彈窗內的樣式 */
+        .swal-list-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #eee; }
     </style>
 </head>
 <body>
 
-<div id="loading" class="loading-overlay">⌛ 正在整頓內務...</div>
+<div id="loading" class="loading-overlay">⌛ 正在對帳中...</div>
 
 <div class="card">
     <div class="top-nav">
@@ -46,7 +48,7 @@
             <select id="sel-year" onchange="updateUI()"></select>
             <select id="sel-month" onchange="updateUI()"></select>
         </div>
-        <div onclick="openSettings()" style="cursor:pointer; font-size:1.2rem; opacity:0.6;">⚙️</div>
+        <div onclick="openSettingsMenu()" style="cursor:pointer; font-size:1.3rem; padding: 5px;">⚙️</div>
     </div>
 
     <div id="page-home" class="page active">
@@ -111,7 +113,7 @@
     async function doAction(type) {
         const amtInput = document.getElementById('amount');
         const amt = parseInt(amtInput.value);
-        if(!amt || amt <= 0) return Swal.fire("數額呢？", "請輸入數額", "warning");
+        if(!amt || amt <= 0) return Swal.fire("數額呢？", "請輸入大於0的數值", "warning");
         const mData = getM();
 
         if(type === 'salary') {
@@ -123,34 +125,13 @@
             mData.saved += amt;
             mData.savedDetails.push({amt: amt, date: new Date().toLocaleDateString()});
         } else if(type === 'out') {
-            // 構建選項，加入一個「➕ 新增類別」
-            let options = {};
-            db.categories.forEach(c => options[c] = c);
-            options["NEW_CAT"] = "➕ [新增類別]";
-
-            let { value: cat } = await Swal.fire({
-                title: '這錢花哪了？',
+            const { value: cat } = await Swal.fire({
+                title: '選擇名目',
                 input: 'select',
-                inputOptions: options,
-                showCancelButton: true,
-                confirmButtonText: '確定'
+                inputOptions: db.categories.reduce((a,v)=>{a[v]=v;return a;},{}),
+                showCancelButton: true
             });
-
             if(!cat) return;
-
-            // 如果選了新增
-            if(cat === "NEW_CAT") {
-                const { value: newCatName } = await Swal.fire({
-                    title: '輸入新名目',
-                    input: 'text',
-                    inputPlaceholder: '例如：打賞、進貢...',
-                    showCancelButton: true
-                });
-                if(!newCatName) return;
-                cat = newCatName;
-                if(!db.categories.includes(cat)) db.categories.push(cat);
-            }
-
             db.total -= amt;
             mData.out += amt;
             mData.outDetails[cat] = (mData.outDetails[cat] || 0) + amt;
@@ -160,33 +141,73 @@
         syncData('push');
     }
 
+    async function openSettingsMenu() {
+        const { value: mode } = await Swal.fire({
+            title: '⚙️ 戶部設定',
+            input: 'radio',
+            inputOptions: { 'URL': '基地網址設定', 'CAT': '噴錢名目管理' },
+            inputValidator: (v) => !v && '請選擇一個功能',
+            showCancelButton: true,
+            confirmButtonText: '進入'
+        });
+
+        if (mode === 'URL') {
+            const { value: u } = await Swal.fire({ title: '基地網址', input: 'text', inputValue: WEB_APP_URL });
+            if (u !== null) { WEB_APP_URL = u; localStorage.setItem('user_gas_url', u); syncData('pull'); }
+        } else if (mode === 'CAT') {
+            manageCategories();
+        }
+    }
+
+    async function manageCategories() {
+        let catHtml = db.categories.map((c, i) => `
+            <div class="swal-list-item">
+                <span>${c}</span>
+                <button onclick="window.removeCat(${i})" style="background:#ff4757; color:white; border:none; border-radius:5px; padding:5px 10px;">刪除</button>
+            </div>
+        `).join('');
+
+        const { value: action } = await Swal.fire({
+            title: '名目官制表',
+            html: `<div style="text-align:left;">${catHtml}</div>`,
+            showCancelButton: true,
+            confirmButtonText: '➕ 新增名目',
+            cancelButtonText: '完成退出'
+        });
+
+        if (action) {
+            const { value: newName } = await Swal.fire({ title: '新名目名稱', input: 'text' });
+            if (newName) {
+                if (!db.categories.includes(newName)) {
+                    db.categories.push(newName);
+                    syncData('push');
+                    manageCategories(); // 重新整理
+                }
+            }
+        }
+    }
+
+    // 將刪除功能掛載到 window，讓 Swal 的 HTML 內容可以呼叫
+    window.removeCat = async (index) => {
+        const name = db.categories[index];
+        const res = await Swal.fire({ title: `刪除「${name}」？`, text: "已記在帳上的金額不會消失，但未來選單將不再出現此項。", showCancelButton: true });
+        if(res.isConfirmed) {
+            db.categories.splice(index, 1);
+            syncData('push');
+            manageCategories(); // 重新整理清單
+        }
+    };
+
     async function editOut(cat) {
         const mData = getM();
         const amt = mData.outDetails[cat] || 0;
         const { value: action } = await Swal.fire({
             title: cat, text: `$${amt.toLocaleString()}`,
             showDenyButton: true, showCancelButton: true,
-            confirmButtonText: '換分類', denyButtonText: '刪除紀錄', cancelButtonText: '取消'
+            confirmButtonText: '更換名目', denyButtonText: '刪除紀錄', cancelButtonText: '算了吧'
         });
         if(action) {
-            let options = {};
-            db.categories.forEach(c => options[c] = c);
-            options["NEW_CAT"] = "➕ [新增類別]";
-
-            let { value: ncat } = await Swal.fire({
-                title: '修正分類', 
-                input: 'select',
-                inputOptions: options
-            });
-            
-            if(ncat === "NEW_CAT") {
-                const { value: newCatName } = await Swal.fire({ title: '輸入新名目', input: 'text' });
-                if(newCatName) {
-                    ncat = newCatName;
-                    if(!db.categories.includes(ncat)) db.categories.push(ncat);
-                } else return;
-            }
-
+            const { value: ncat } = await Swal.fire({ title: '換到哪？', input: 'select', inputOptions: db.categories.reduce((a,v)=>{a[v]=v;return a;},{}) });
             if(ncat) {
                 mData.outDetails[ncat] = (mData.outDetails[ncat]||0) + amt;
                 delete mData.outDetails[cat];
@@ -198,28 +219,15 @@
         }
     }
 
-    async function delIn(idx) {
-        const mData = getM();
-        const item = mData.savedDetails[idx];
-        const res = await Swal.fire({ title: '撤銷充公？', text: `退回 $${item.amt} 至國庫`, showCancelButton: true });
-        if(res.isConfirmed) {
-            db.total += item.amt; mData.saved -= item.amt;
-            mData.savedDetails.splice(idx, 1);
-            syncData('push');
-        }
-    }
-
     function updateUI() {
         const mData = getM();
-        document.getElementById('balance-display').innerText = '$ '+(db.total || 0).toLocaleString();
-        
+        document.getElementById('balance-display').innerText = '$ ' + (db.total || 0).toLocaleString();
         document.getElementById('stats-grid').innerHTML = `
             <div class="stat-card"><span class="stat-label">俸祿</span><span class="stat-val" style="color:var(--salary)">$${mData.salary.toLocaleString()}</span></div>
             <div class="stat-card"><span class="stat-label">充公</span><span class="stat-val" style="color:var(--in)">$${mData.saved.toLocaleString()}</span></div>
             <div class="stat-card"><span class="stat-label">支出</span><span class="stat-val" style="color:var(--out)">$${mData.out.toLocaleString()}</span></div>
             <div class="stat-card"><span class="stat-label">進度</span><span class="stat-val" style="color:var(--gold)">${Math.min(100,((mData.saved/db.monthlyGoal)*100)).toFixed(0)}%</span></div>
         `;
-
         const exList = document.getElementById('expense-list'); exList.innerHTML = '';
         const details = mData.outDetails || {};
         for(let c in details) {
@@ -227,22 +235,20 @@
             d.innerHTML = `<span>${c}</span><span style="color:var(--out)">$${details[c].toLocaleString()} ⚙️</span>`;
             exList.appendChild(d);
         }
-
         const svList = document.getElementById('saved-list'); svList.innerHTML = '';
         (mData.savedDetails || []).forEach((v, i)=>{
             const d = document.createElement('div'); d.className='detail-item'; d.onclick=()=>delIn(i);
             d.innerHTML = `<span>${v.date}</span><span style="color:var(--in)">$${v.amt.toLocaleString()} 🗑️</span>`;
             svList.appendChild(d);
         });
-
         if(document.getElementById('page-stats').classList.contains('active')) {
             const ctx = document.getElementById('outPieChart');
             if(outPieChart) outPieChart.destroy();
             const labs = Object.keys(details);
             outPieChart = new Chart(ctx, {
                 type:'doughnut',
-                data: { labels: labs.length?labs:["無"], datasets:[{data: labs.length?Object.values(details):[1], backgroundColor:['#ff4757','#ffa502','#2ed573','#4b7bec','#a55eea','#1abc9c','#34495e']}] },
-                options: { plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 10 } } } } }
+                data: { labels: labs.length?labs:["無"], datasets:[{data: labs.length?Object.values(details):[1], backgroundColor:['#ff4757','#ffa502','#2ed573','#4b7bec','#a55eea','#1abc9c','#34495e','#95afc0','#f0932b']}] },
+                options: { plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } } } }
             });
         }
     }
@@ -257,25 +263,26 @@
                 const j = await r.json(); 
                 if(j && typeof j.total === 'number') {
                     db = j;
-                    // 確保類別清單存在
                     if(!db.categories) db.categories = ["伙食", "交通", "娛樂", "購物", "其他"];
                 }
             }
             updateUI();
-        } catch(e) { console.error("同步失敗:", e); }
+        } catch(e) { console.error(e); }
         document.getElementById('loading').style.display='none';
     }
 
-    function switchPage(p) { 
-        document.querySelectorAll('.page').forEach(x=>x.classList.remove('active')); 
-        document.getElementById(p).classList.add('active'); 
-        updateUI(); 
+    async function delIn(idx) {
+        const mData = getM();
+        const item = mData.savedDetails[idx];
+        const res = await Swal.fire({ title: '撤銷充公？', text: `$${item.amt}`, showCancelButton: true });
+        if(res.isConfirmed) {
+            db.total += item.amt; mData.saved -= item.amt;
+            mData.savedDetails.splice(idx, 1);
+            syncData('push');
+        }
     }
 
-    async function openSettings() { 
-        const {value: u} = await Swal.fire({title:'基地網址', input:'text', inputValue:WEB_APP_URL}); 
-        if(u !== null){ WEB_APP_URL=u; localStorage.setItem('user_gas_url', u); syncData('pull'); } 
-    }
+    function switchPage(p) { document.querySelectorAll('.page').forEach(x=>x.classList.remove('active')); document.getElementById(p).classList.add('active'); updateUI(); }
     
     window.onload = () => syncData('pull');
 </script>
