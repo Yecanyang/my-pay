@@ -4,6 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>理財生存戰 5.5</title>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="理財生存戰">
+    <link rel="apple-touch-icon" href="https://i.imgur.com/你的圖片ID.png"> 
+    
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         :root { --bg: #f0f2f5; --out: #ff4757; --in: #2ed573; --gold: #ffa502; }
@@ -72,12 +77,11 @@
     let WEB_APP_URL = localStorage.getItem('user_gas_url') || "";
     let db = { total: 0, wIn: 0, wOut: 0, doneDays: [] };
 
-    // 設定視窗
     async function openSettings() {
         const { value: url } = await Swal.fire({
             title: '基地連線設定',
             input: 'text',
-            inputLabel: '請貼入您的 Google Apps Script 網址 (別貼錯，不然我也不知道會怎樣)',
+            inputLabel: '請貼入您的 Google Apps Script 網址',
             inputValue: WEB_APP_URL,
             showCancelButton: true,
             confirmButtonColor: '#2ed573',
@@ -91,12 +95,7 @@
                 WEB_APP_URL = url;
                 syncData('pull');
             } else {
-                Swal.fire({
-                    title: '哎呀',
-                    text: '網址好像怪怪的喔！你是貼錯了還是想偷懶？',
-                    icon: 'error',
-                    confirmButtonText: '我再確認一下啦...'
-                });
+                Swal.fire({ title: '哎呀', text: '網址好像怪怪的喔！', icon: 'error' });
             }
         }
     }
@@ -112,9 +111,7 @@
                 db = await res.json();
             }
             updateUI();
-        } catch (e) {
-            console.error(e);
-        }
+        } catch (e) { console.error(e); }
         document.getElementById('loading').style.display = 'none';
     }
 
@@ -127,30 +124,9 @@
     function renderGrid() {
         const grid = document.getElementById('challenge-grid');
         grid.innerHTML = '';
-        const roastsIn = [
-            "哎喲，居然捨得存錢？",
-            "這點錢也存？還不夠買杯珍奶！",
-            "確定不拿去吃好料？",
-            "太陽從西邊出來了？",
-            "居然能堅持？真厲害！",
-            "下次別點錯了喔！"
-        ];
-        const roastsOut = [
-            "這筆錢你不要了嗎？",
-            "取消？我看你是想偷偷噴錢吧！",
-            "這錢你也捨得扣？真沒人性！",
-            "我看你是不想財富自由了！",
-            "取消？沒問題，我看你能堅持多久！",
-            "沒關係，下次再存回來！"
-        ];
-        const roastsInSuccess = [
-            "存入成功！雖然不多，但勉強算是有存錢！",
-            "數據已同步！別問我為什麼總金額沒變多少...",
-            "恭喜存錢！雖然我知道你很快就會噴掉...",
-            "勉強存點！別忘了下次多存點！",
-            "數據已同步！別忘了下次繼續努力！",
-            "下次點快點，別讓我等太久！"
-        ];
+        const roastsIn = ["哎喲，居然捨得存錢？", "這點錢也存？", "確定不拿去吃好料？", "太陽從西邊出來了？"];
+        const roastsOut = ["這筆錢你不要了嗎？", "取消？想偷噴錢吧！", "沒人性！", "不想財富自由了？"];
+        const roastsInSuccess = ["存入成功！雖然不多...", "數據已同步！總金額沒變多少...", "恭喜存錢！很快就會噴掉吧..."];
 
         for (let i = 1; i <= 365; i++) {
             const isDone = db.doneDays.includes(i);
@@ -158,54 +134,39 @@
             div.className = 'grid-item' + (isDone ? ' done' : '');
             div.innerText = i;
             div.onclick = async () => {
-                if (!WEB_APP_URL) return Swal.fire({ title: '等等', text: '請先設定雲端基地網址，你是失憶了吗？', icon: 'warning', confirmButtonText: '我這就去設...' });
+                if (!WEB_APP_URL) return Swal.fire({ title: '等等', text: '請先設定基地網址！', icon: 'warning' });
                 
                 if (isDone) {
                     const result = await Swal.fire({
                         title: '要取消嗎？',
-                        text: `您要取消第 ${i} 天的 $${i} 存款嗎？真的是點錯了？我看你是想偷吃步吧！`,
+                        text: `您要取消第 ${i} 天的 $${i} 存款嗎？`,
                         icon: 'question',
                         showCancelButton: true,
-                        confirmButtonColor: '#ff4757',
-                        confirmButtonText: '是的，我點錯了 (才怪)',
-                        cancelButtonText: '沒事，留著'
+                        confirmButtonText: '是的，我點錯了',
+                        cancelButtonText: '留著'
                     });
                     if (result.isConfirmed) {
                         db.doneDays = db.doneDays.filter(day => day !== i);
                         db.total -= i; db.wIn -= i;
                         syncData('push');
                         renderGrid();
-                        const roastOutSuccess = roastsOut[Math.floor(Math.random() * roastsOut.length)];
-                        Swal.fire({
-                            title: '取消成功！',
-                            text: `已扣除第 ${i} 天的 $${i} 存款！${roastOutSuccess}`,
-                            icon: 'info',
-                            confirmButtonText: '收到啦，囉唆！'
-                        });
+                        Swal.fire({ title: '取消成功！', text: roastsOut[Math.floor(Math.random() * roastsOut.length)], icon: 'info' });
                     }
                 } else {
-                    const roastIn = roastsIn[Math.floor(Math.random() * roastsIn.length)];
                     const result = await Swal.fire({
                         title: '太棒了！(才怪)',
-                        text: `確定要存入第 ${i} 天的 $${i} 嗎？真的假的？我看你撐不到最後！${roastIn}`,
+                        text: `確定要存入第 ${i} 天的 $${i} 嗎？${roastsIn[Math.floor(Math.random() * roastsIn.length)]}`,
                         icon: 'success',
                         showCancelButton: true,
-                        confirmButtonColor: '#2ed573',
                         confirmButtonText: '確定存入',
-                        cancelButtonText: '先不要 (想偷偷噴錢)'
+                        cancelButtonText: '先不要'
                     });
                     if (result.isConfirmed) {
                         db.doneDays.push(i);
                         db.total += i; db.wIn += i;
                         syncData('push');
                         renderGrid();
-                        const roastInSuccess = roastsInSuccess[Math.floor(Math.random() * roastsInSuccess.length)];
-                        Swal.fire({
-                            title: '存入成功！💰',
-                            text: `已成功存入第 ${i} 天的 $${i}！${roastInSuccess}`,
-                            icon: 'success',
-                            confirmButtonText: '收到啦，囉唆！'
-                        });
+                        Swal.fire({ title: '存入成功！💰', text: roastsInSuccess[Math.floor(Math.random() * roastsInSuccess.length)], icon: 'success' });
                     }
                 }
             };
@@ -217,12 +178,7 @@
         const amtInput = document.getElementById('amount');
         const amt = parseInt(amtInput.value);
         if (isNaN(amt) || amt <= 0) return;
-
-        if (type === 'out') {
-            db.total -= amt; db.wOut += amt;
-        } else {
-            db.total += amt; db.wIn += amt;
-        }
+        if (type === 'out') { db.total -= amt; db.wOut += amt; } else { db.total += amt; db.wIn += amt; }
         amtInput.value = '';
         syncData('push');
     }
@@ -235,6 +191,5 @@
 
     window.onload = () => { if (WEB_APP_URL) syncData('pull'); };
 </script>
-
 </body>
 </html>
