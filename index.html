@@ -3,20 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>戶部尚書 V15.4 - 全面肅清版</title>
-    <link rel="apple-touch-icon" href="image.png">
-    <link rel="icon" href="image.png">
+    <title>戶部尚書 V15.6 - 自由奔放版</title>
+    <link rel="apple-touch-icon" href="111.png">
+    <link rel="icon" href="111.png">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root { --bg: #f0f2f5; --out: #ff4757; --in: #2ed573; --gold: #ffa502; --silver: #576574; --salary: #a55eea; --blue: #4b7bec; }
         body { font-family: -apple-system, sans-serif; background: var(--bg); margin: 0; padding: 10px; display: flex; justify-content: center; }
-        .card { background: white; padding: 20px; border-radius: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 100%; max-width: 400px; text-align: center; position: relative; min-height: 90vh; }
+        .card { background: white; padding: 20px; border-radius: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 100%; max-width: 400px; text-align: center; min-height: 90vh; }
         .top-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-        .quote-box { font-style: italic; color: #e67e22; font-size: 0.85rem; margin-bottom: 15px; min-height: 2.8rem; display: flex; align-items: center; justify-content: center; background: #fff5e6; border-radius: 15px; padding: 8px; border: 1px dashed #ffd39b; }
-        select { border: 1px solid #ddd; padding: 8px; border-radius: 12px; background: #f8f9fa; }
+        .quote-box { font-style: italic; color: #e67e22; font-size: 0.85rem; margin-bottom: 15px; min-height: 3rem; display: flex; align-items: center; justify-content: center; background: #fff5e6; border-radius: 15px; padding: 8px; border: 1px dashed #ffd39b; }
+        select { border: 1px solid #ddd; padding: 8px; border-radius: 12px; background: #f8f9fa; outline: none; }
         .page { display: none; }
         .page.active { display: block; }
         .balance-box { background: linear-gradient(145deg, #ffffff, #f0f0f0); padding: 15px; border-radius: 20px; margin-bottom: 15px; box-shadow: 5px 5px 15px #d1d1d1; }
@@ -24,7 +23,7 @@
         .main-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
         .stat-card { background: white; padding: 8px; border-radius: 12px; border: 1px solid #f0f0f0; }
         .stat-label { font-size: 0.7rem; color: #888; }
-        .stat-val { font-weight: bold; font-size: 0.9rem; display: block; }
+        .stat-val { font-weight: bold; font-size: 0.95rem; display: block; }
         .btn-container { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
         .btn { border: none; padding: 15px; border-radius: 15px; font-weight: bold; color: white; cursor: pointer; font-size: 1rem; -webkit-tap-highlight-color: transparent; }
         .btn-salary { background: var(--salary); grid-column: span 2; }
@@ -32,14 +31,14 @@
         .btn-in { background: var(--in); }
         .btn-nav { background: var(--blue); }
         .btn-gold { background: var(--gold); }
-        .detail-list { text-align: left; margin: 5px 0; max-height: 180px; overflow-y: auto; padding: 5px; background: #fafafa; border-radius: 15px; }
-        .detail-item { display: flex; justify-content: space-between; padding: 12px; border-bottom: 1px solid #eee; font-size: 0.95rem; }
+        .detail-list { text-align: left; margin: 5px 0; max-height: 200px; overflow-y: auto; padding: 5px; background: #fafafa; border-radius: 15px; }
+        .detail-item { display: flex; justify-content: space-between; padding: 12px; border-bottom: 1px solid #eee; font-size: 0.95rem; cursor: pointer; }
         .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.9); display: none; align-items: center; justify-content: center; z-index: 10000; }
     </style>
 </head>
 <body>
 
-<div id="loading" class="loading-overlay">⌛ 正在整肅官場紀律...</div>
+<div id="loading" class="loading-overlay">⌛ 正在整頓內務...</div>
 
 <div class="card">
     <div class="top-nav">
@@ -47,7 +46,7 @@
             <select id="sel-year" onchange="updateUI()"></select>
             <select id="sel-month" onchange="updateUI()"></select>
         </div>
-        <div onclick="openSettings()" style="cursor:pointer; font-size:1.2rem;">⚙️</div>
+        <div onclick="openSettings()" style="cursor:pointer; font-size:1.2rem; opacity:0.6;">⚙️</div>
     </div>
 
     <div id="page-home" class="page active">
@@ -57,7 +56,7 @@
             <div class="balance-amount" id="balance-display">$ 0</div>
             <div class="main-stats" id="stats-grid"></div>
         </div>
-        <input type="number" id="amount" placeholder="輸入數額..." inputmode="numeric" style="width:100%; padding:15px; border-radius:15px; border:2px solid #eee; box-sizing:border-box; margin-bottom:10px; font-size:1.5rem; text-align:center;">
+        <input type="number" id="amount" placeholder="輸入數額..." inputmode="numeric" style="width:100%; padding:15px; border-radius:15px; border:2px solid #eee; box-sizing:border-box; margin-bottom:10px; font-size:1.5rem; text-align:center; outline:none;">
         <div class="btn-container">
             <button class="btn btn-salary" onclick="doAction('salary')">🧧 領取俸祿</button>
             <button class="btn btn-out" onclick="doAction('out')">💸 肆意噴錢</button>
@@ -69,10 +68,10 @@
 
     <div id="page-stats" class="page">
         <h3>📊 帳務審核中心</h3>
-        <canvas id="outPieChart" style="max-height: 200px;"></canvas>
-        <h4 style="text-align:left; margin:10px 0 5px;">💸 支出明細 (點擊修正)</h4>
+        <canvas id="outPieChart" style="max-height: 180px;"></canvas>
+        <h4 style="text-align:left; margin:10px 0 5px; font-size:0.9rem;">💸 支出明細 (點擊修正)</h4>
         <div class="detail-list" id="expense-list"></div>
-        <h4 style="text-align:left; margin:10px 0 5px;">📜 充公紀錄 (點擊刪除)</h4>
+        <h4 style="text-align:left; margin:10px 0 5px; font-size:0.9rem;">📜 充公紀錄 (點擊刪除)</h4>
         <div class="detail-list" id="saved-list"></div>
         <button class="btn" style="background:#bbb; width:100%; margin-top:15px;" onclick="switchPage('page-home')">返回主頁</button>
     </div>
@@ -91,7 +90,6 @@
     let db = { total: 0, monthlyGoal: 5000, years: {}, categories: ["伙食", "交通", "娛樂", "購物", "其他"] };
     let outPieChart = null;
 
-    // 初始化下拉選單
     const sy = document.getElementById('sel-year');
     const sm = document.getElementById('sel-month');
     for(let y=2024; y<=2030; y++) sy.add(new Option(y+"年", y));
@@ -111,48 +109,84 @@
     }
 
     async function doAction(type) {
-        const amt = parseInt(document.getElementById('amount').value);
-        if(!amt || amt <= 0) return Swal.fire("數額呢？", "請輸入大於0的數字", "warning");
+        const amtInput = document.getElementById('amount');
+        const amt = parseInt(amtInput.value);
+        if(!amt || amt <= 0) return Swal.fire("數額呢？", "請輸入數額", "warning");
         const mData = getM();
 
         if(type === 'salary') {
             db.total += amt;
             mData.salary += amt;
         } else if(type === 'in') {
-            if(db.total < amt) return Swal.fire("國庫空虛", "沒錢充公，快去領俸祿", "error");
+            if(db.total < amt) return Swal.fire("國庫空虛", "沒錢充公", "error");
             db.total -= amt;
             mData.saved += amt;
             mData.savedDetails.push({amt: amt, date: new Date().toLocaleDateString()});
         } else if(type === 'out') {
-            const { value: cat } = await Swal.fire({
-                title: '選個類別',
+            // 構建選項，加入一個「➕ 新增類別」
+            let options = {};
+            db.categories.forEach(c => options[c] = c);
+            options["NEW_CAT"] = "➕ [新增類別]";
+
+            let { value: cat } = await Swal.fire({
+                title: '這錢花哪了？',
                 input: 'select',
-                inputOptions: db.categories.reduce((a,v)=>{a[v]=v;return a;},{}),
-                showCancelButton: true
+                inputOptions: options,
+                showCancelButton: true,
+                confirmButtonText: '確定'
             });
+
             if(!cat) return;
+
+            // 如果選了新增
+            if(cat === "NEW_CAT") {
+                const { value: newCatName } = await Swal.fire({
+                    title: '輸入新名目',
+                    input: 'text',
+                    inputPlaceholder: '例如：打賞、進貢...',
+                    showCancelButton: true
+                });
+                if(!newCatName) return;
+                cat = newCatName;
+                if(!db.categories.includes(cat)) db.categories.push(cat);
+            }
+
             db.total -= amt;
             mData.out += amt;
             mData.outDetails[cat] = (mData.outDetails[cat] || 0) + amt;
         }
-        document.getElementById('amount').value = '';
+        amtInput.value = '';
         document.getElementById('quote-display').innerText = roasts[Math.floor(Math.random()*roasts.length)];
         syncData('push');
     }
 
     async function editOut(cat) {
         const mData = getM();
-        const amt = mData.outDetails[cat];
+        const amt = mData.outDetails[cat] || 0;
         const { value: action } = await Swal.fire({
-            title: cat, text: `$${amt}`,
+            title: cat, text: `$${amt.toLocaleString()}`,
             showDenyButton: true, showCancelButton: true,
-            confirmButtonText: '換分類', denyButtonText: '刪除', cancelButtonText: '算了吧'
+            confirmButtonText: '換分類', denyButtonText: '刪除紀錄', cancelButtonText: '取消'
         });
         if(action) {
-            const { value: ncat } = await Swal.fire({
-                title: '換到哪？', input: 'select',
-                inputOptions: db.categories.reduce((a,v)=>{a[v]=v;return a;},{})
+            let options = {};
+            db.categories.forEach(c => options[c] = c);
+            options["NEW_CAT"] = "➕ [新增類別]";
+
+            let { value: ncat } = await Swal.fire({
+                title: '修正分類', 
+                input: 'select',
+                inputOptions: options
             });
+            
+            if(ncat === "NEW_CAT") {
+                const { value: newCatName } = await Swal.fire({ title: '輸入新名目', input: 'text' });
+                if(newCatName) {
+                    ncat = newCatName;
+                    if(!db.categories.includes(ncat)) db.categories.push(ncat);
+                } else return;
+            }
+
             if(ncat) {
                 mData.outDetails[ncat] = (mData.outDetails[ncat]||0) + amt;
                 delete mData.outDetails[cat];
@@ -167,7 +201,7 @@
     async function delIn(idx) {
         const mData = getM();
         const item = mData.savedDetails[idx];
-        const res = await Swal.fire({ title: '撤銷充公？', text: `$${item.amt}`, showCancelButton: true });
+        const res = await Swal.fire({ title: '撤銷充公？', text: `退回 $${item.amt} 至國庫`, showCancelButton: true });
         if(res.isConfirmed) {
             db.total += item.amt; mData.saved -= item.amt;
             mData.savedDetails.splice(idx, 1);
@@ -177,10 +211,9 @@
 
     function updateUI() {
         const mData = getM();
-        document.getElementById('balance-display').innerText = '$ '+db.total.toLocaleString();
+        document.getElementById('balance-display').innerText = '$ '+(db.total || 0).toLocaleString();
         
-        const grid = document.getElementById('stats-grid');
-        grid.innerHTML = `
+        document.getElementById('stats-grid').innerHTML = `
             <div class="stat-card"><span class="stat-label">俸祿</span><span class="stat-val" style="color:var(--salary)">$${mData.salary.toLocaleString()}</span></div>
             <div class="stat-card"><span class="stat-label">充公</span><span class="stat-val" style="color:var(--in)">$${mData.saved.toLocaleString()}</span></div>
             <div class="stat-card"><span class="stat-label">支出</span><span class="stat-val" style="color:var(--out)">$${mData.out.toLocaleString()}</span></div>
@@ -188,14 +221,15 @@
         `;
 
         const exList = document.getElementById('expense-list'); exList.innerHTML = '';
-        for(let c in mData.outDetails) {
+        const details = mData.outDetails || {};
+        for(let c in details) {
             const d = document.createElement('div'); d.className='detail-item'; d.onclick=()=>editOut(c);
-            d.innerHTML = `<span>${c}</span><span style="color:var(--out)">$${mData.outDetails[c].toLocaleString()} ⚙️</span>`;
+            d.innerHTML = `<span>${c}</span><span style="color:var(--out)">$${details[c].toLocaleString()} ⚙️</span>`;
             exList.appendChild(d);
         }
 
         const svList = document.getElementById('saved-list'); svList.innerHTML = '';
-        mData.savedDetails.forEach((v, i)=>{
+        (mData.savedDetails || []).forEach((v, i)=>{
             const d = document.createElement('div'); d.className='detail-item'; d.onclick=()=>delIn(i);
             d.innerHTML = `<span>${v.date}</span><span style="color:var(--in)">$${v.amt.toLocaleString()} 🗑️</span>`;
             svList.appendChild(d);
@@ -204,10 +238,11 @@
         if(document.getElementById('page-stats').classList.contains('active')) {
             const ctx = document.getElementById('outPieChart');
             if(outPieChart) outPieChart.destroy();
-            const labs = Object.keys(mData.outDetails);
+            const labs = Object.keys(details);
             outPieChart = new Chart(ctx, {
                 type:'doughnut',
-                data: { labels: labs.length?labs:["無"], datasets:[{data: labs.length?Object.values(mData.outDetails):[1], backgroundColor:['#ff4757','#ffa502','#2ed573','#4b7bec','#a55eea']}] }
+                data: { labels: labs.length?labs:["無"], datasets:[{data: labs.length?Object.values(details):[1], backgroundColor:['#ff4757','#ffa502','#2ed573','#4b7bec','#a55eea','#1abc9c','#34495e']}] },
+                options: { plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 10 } } } } }
             });
         }
     }
@@ -217,17 +252,31 @@
         document.getElementById('loading').style.display='flex';
         try {
             if(mode==='push') await fetch(WEB_APP_URL, {method:'POST', body:JSON.stringify({data:db})});
-            else { const r = await fetch(WEB_APP_URL); const j = await r.json(); if(j.years) db = j; }
+            else { 
+                const r = await fetch(WEB_APP_URL); 
+                const j = await r.json(); 
+                if(j && typeof j.total === 'number') {
+                    db = j;
+                    // 確保類別清單存在
+                    if(!db.categories) db.categories = ["伙食", "交通", "娛樂", "購物", "其他"];
+                }
+            }
             updateUI();
-        } catch(e) { console.error(e); }
+        } catch(e) { console.error("同步失敗:", e); }
         document.getElementById('loading').style.display='none';
     }
 
-    function switchPage(p) { document.querySelectorAll('.page').forEach(x=>x.classList.remove('active')); document.getElementById(p).classList.add('active'); updateUI(); }
+    function switchPage(p) { 
+        document.querySelectorAll('.page').forEach(x=>x.classList.remove('active')); 
+        document.getElementById(p).classList.add('active'); 
+        updateUI(); 
+    }
+
     async function openSettings() { 
         const {value: u} = await Swal.fire({title:'基地網址', input:'text', inputValue:WEB_APP_URL}); 
-        if(u!==undefined){ WEB_APP_URL=u; localStorage.setItem('user_gas_url', u); syncData('pull'); } 
+        if(u !== null){ WEB_APP_URL=u; localStorage.setItem('user_gas_url', u); syncData('pull'); } 
     }
+    
     window.onload = () => syncData('pull');
 </script>
 </body>
