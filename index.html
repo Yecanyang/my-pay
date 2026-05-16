@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>戶部尚書 V15.8 - 雷霆清算版</title>
+    <title>戶部尚書 V15.81 - 安全防爆版</title>
     <link rel="apple-touch-icon" href="111.png">
     <link rel="icon" href="111.png">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -98,12 +98,23 @@
     sy.value = new Date().getFullYear();
     sm.value = new Date().getMonth() + 1;
 
+    // 安全數字轉換防爆器
+    function safeNum(val) {
+        let n = parseInt(val);
+        return isNaN(n) ? 0 : n;
+    }
+
     function getM() {
         const y = sy.value, m = sm.value;
         if(!db.years) db.years = {};
         if(!db.years[y]) db.years[y] = { months: {} };
         if(!db.years[y].months[m]) db.years[y].months[m] = { salary:0, out:0, saved:0, outDetails:{}, savedDetails:[] };
         const data = db.years[y].months[m];
+        
+        // 確保所有數據欄位都不是 NaN
+        data.salary = safeNum(data.salary);
+        data.out = safeNum(data.out);
+        data.saved = safeNum(data.saved);
         if(!data.outDetails) data.outDetails = {};
         if(!data.savedDetails) data.savedDetails = [];
         return data;
@@ -116,11 +127,11 @@
         const mData = getM();
 
         if(type === 'salary') {
-            db.total += amt;
+            db.total = safeNum(db.total) + amt;
             mData.salary += amt;
         } else if(type === 'in') {
-            if(db.total < amt) return Swal.fire("國庫空虛", "沒錢充公", "error");
-            db.total -= amt;
+            if(safeNum(db.total) < amt) return Swal.fire("國庫空虛", "沒錢充公", "error");
+            db.total = safeNum(db.total) - amt;
             mData.saved += amt;
             mData.savedDetails.push({amt: amt, date: new Date().toLocaleDateString()});
         } else if(type === 'out') {
@@ -131,9 +142,9 @@
                 showCancelButton: true
             });
             if(!cat) return;
-            db.total -= amt;
+            db.total = safeNum(db.total) - amt;
             mData.out += amt;
-            mData.outDetails[cat] = (mData.outDetails[cat] || 0) + amt;
+            mData.outDetails[cat] = safeNum(mData.outDetails[cat]) + amt;
         }
         amtInput.value = '';
         document.getElementById('quote-display').innerText = roasts[Math.floor(Math.random()*roasts.length)];
@@ -144,7 +155,7 @@
         const { value: mode } = await Swal.fire({
             title: '⚙️ 戶部設定',
             input: 'radio',
-            inputOptions: { 'URL': '基地網址設定', 'CAT': '噴錢名目管理', 'RESET': '📜 國庫清零 (慎用)' },
+            inputOptions: { 'URL': '基地網址設定', 'CAT': '噴錢名目管理', 'RESET': '📜 國庫清零' },
             inputValidator: (v) => !v && '請選擇一個功能',
             showCancelButton: true
         });
@@ -162,19 +173,19 @@
     async function resetTreasury() {
         const res = await Swal.fire({
             title: '確定要雷霆清算？',
-            text: '此舉將使國庫總額歸零，並抹除當月所有明細！(名目設定會保留)',
+            text: '此舉將使國庫總額歸零，並抹除所有明細！',
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#ff4757',
-            confirmButtonText: '是的，全部清空！',
+            confirmButtonText: '全部清空！',
             cancelButtonText: '朕再想想'
         });
 
         if (res.isConfirmed) {
             db.total = 0;
-            db.years = {}; // 清空所有年份月份數據
+            db.years = {}; 
             syncData('push');
-            Swal.fire('清算完成', '國庫已洗劫一空，請尚書大人重新振作。', 'success');
+            Swal.fire('清算完成', '國庫已洗劫一空。', 'success');
         }
     }
 
@@ -214,7 +225,7 @@
 
     async function editOut(cat) {
         const mData = getM();
-        const amt = mData.outDetails[cat] || 0;
+        const amt = safeNum(mData.outDetails[cat]);
         const { value: action } = await Swal.fire({
             title: cat, text: `$${amt.toLocaleString()}`,
             showDenyButton: true, showCancelButton: true,
@@ -222,41 +233,52 @@
         });
         if(action) {
             const { value: ncat } = await Swal.fire({ title: '換到哪？', input: 'select', inputOptions: db.categories.reduce((a,v)=>{a[v]=v;return a;},{}) });
-            if(ncat) { mData.outDetails[ncat] = (mData.outDetails[ncat]||0) + amt; delete mData.outDetails[cat]; syncData('push'); }
+            if(ncat) { mData.outDetails[ncat] = safeNum(mData.outDetails[ncat]) + amt; delete mData.outDetails[cat]; syncData('push'); }
         } else if(action === false) {
-            db.total += amt; mData.out -= amt; delete mData.outDetails[cat]; syncData('push');
+            db.total = safeNum(db.total) + amt; mData.out = safeNum(mData.out) - amt; delete mData.outDetails[cat]; syncData('push');
         }
     }
 
     function updateUI() {
+        db.total = safeNum(db.total);
         const mData = getM();
-        document.getElementById('balance-display').innerText = '$ ' + (db.total || 0).toLocaleString();
+        document.getElementById('balance-display').innerText = '$ ' + db.total.toLocaleString();
+        
+        let goal = safeNum(db.monthlyGoal) || 5000;
+        let progress = goal > 0 ? Math.min(100, ((mData.saved / goal) * 100)) : 0;
+
         document.getElementById('stats-grid').innerHTML = `
             <div class="stat-card"><span class="stat-label">俸祿</span><span class="stat-val" style="color:var(--salary)">$${mData.salary.toLocaleString()}</span></div>
             <div class="stat-card"><span class="stat-label">充公</span><span class="stat-val" style="color:var(--in)">$${mData.saved.toLocaleString()}</span></div>
             <div class="stat-card"><span class="stat-label">支出</span><span class="stat-val" style="color:var(--out)">$${mData.out.toLocaleString()}</span></div>
-            <div class="stat-card"><span class="stat-label">進度</span><span class="stat-val" style="color:var(--gold)">${Math.min(100,((mData.saved/db.monthlyGoal)*100)).toFixed(0)}%</span></div>
+            <div class="stat-card"><span class="stat-label">進度</span><span class="stat-val" style="color:var(--gold)">${progress.toFixed(0)}%</span></div>
         `;
+        
         const exList = document.getElementById('expense-list'); exList.innerHTML = '';
         const details = mData.outDetails || {};
         for(let c in details) {
+            const val = safeNum(details[c]);
+            if(val === 0) continue;
             const d = document.createElement('div'); d.className='detail-item'; d.onclick=()=>editOut(c);
-            d.innerHTML = `<span>${c}</span><span style="color:var(--out)">$${details[c].toLocaleString()} ⚙️</span>`;
+            d.innerHTML = `<span>${c}</span><span style="color:var(--out)">$${val.toLocaleString()} ⚙️</span>`;
             exList.appendChild(d);
         }
+        
         const svList = document.getElementById('saved-list'); svList.innerHTML = '';
         (mData.savedDetails || []).forEach((v, i)=>{
             const d = document.createElement('div'); d.className='detail-item'; d.onclick=()=>delIn(i);
-            d.innerHTML = `<span>${v.date}</span><span style="color:var(--in)">$${v.amt.toLocaleString()} 🗑️</span>`;
+            d.innerHTML = `<span>${v.date}</span><span style="color:var(--in)">$${safeNum(v.amt).toLocaleString()} 🗑️</span>`;
             svList.appendChild(d);
         });
+        
         if(document.getElementById('page-stats').classList.contains('active')) {
             const ctx = document.getElementById('outPieChart');
             if(outPieChart) outPieChart.destroy();
-            const labs = Object.keys(details);
+            const labs = Object.keys(details).filter(c => safeNum(details[c]) > 0);
+            const dataVals = labs.map(c => safeNum(details[c]));
             outPieChart = new Chart(ctx, {
                 type:'doughnut',
-                data: { labels: labs.length?labs:["無"], datasets:[{data: labs.length?Object.values(details):[1], backgroundColor:['#ff4757','#ffa502','#2ed573','#4b7bec','#a55eea','#1abc9c','#34495e']}] },
+                data: { labels: labs.length?labs:["無"], datasets:[{data: labs.length?dataVals:[1], backgroundColor:['#ff4757','#ffa502','#2ed573','#4b7bec','#a55eea','#1abc9c','#34495e']}] },
                 options: { plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } } } }
             });
         }
@@ -270,7 +292,11 @@
             else { 
                 const r = await fetch(WEB_APP_URL); 
                 const j = await r.json(); 
-                if(j && typeof j.total === 'number') { db = j; if(!db.categories) db.categories = ["伙食","交通","娛樂","購物","其他"]; }
+                if(j && typeof j.total !== 'undefined') { 
+                    db = j; 
+                    db.total = safeNum(db.total);
+                    if(!db.categories) db.categories = ["伙食","交通","娛樂","購物","其他"]; 
+                }
             }
             updateUI();
         } catch(e) { console.error(e); }
@@ -280,8 +306,8 @@
     async function delIn(idx) {
         const mData = getM();
         const item = mData.savedDetails[idx];
-        const res = await Swal.fire({ title: '撤銷充公？', text: `$${item.amt}`, showCancelButton: true });
-        if(res.isConfirmed) { db.total += item.amt; mData.saved -= item.amt; mData.savedDetails.splice(idx, 1); syncData('push'); }
+        const res = await Swal.fire({ title: '撤銷充公？', text: `$${safeNum(item.amt)}`, showCancelButton: true });
+        if(res.isConfirmed) { db.total = safeNum(db.total) + safeNum(item.amt); mData.saved = safeNum(mData.saved) - safeNum(item.amt); mData.savedDetails.splice(idx, 1); syncData('push'); }
     }
 
     function switchPage(p) { document.querySelectorAll('.page').forEach(x=>x.classList.remove('active')); document.getElementById(p).classList.add('active'); updateUI(); }
