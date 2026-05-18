@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>戶部尚書 V15.81 - 安全防爆版</title>
-    <link rel="apple-touch-icon" href="111.png">
-    <link rel="icon" href="111.png">
+    <title>戶部尚書 V15.82 - 萬全計畫版</title>
+    <link rel="apple-touch-icon" href="image.png">
+    <link rel="icon" href="image.png">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -35,6 +35,11 @@
         .detail-item { display: flex; justify-content: space-between; padding: 12px; border-bottom: 1px solid #eee; font-size: 0.95rem; cursor: pointer; }
         .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.9); display: none; align-items: center; justify-content: center; z-index: 10000; }
         .swal-list-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #eee; }
+        
+        /* 充公計畫網格樣式 */
+        .plan-month-row { display: flex; justify-content: space-between; align-items: center; background: #f8f9fa; padding: 12px 15px; border-radius: 15px; margin-bottom: 8px; cursor: pointer; }
+        .plan-month-name { font-weight: bold; color: #333; }
+        .plan-month-info { text-align: right; }
     </style>
 </head>
 <body>
@@ -78,8 +83,8 @@
     </div>
 
     <div id="page-plan" class="page">
-        <h3>📅 年度充公計畫</h3>
-        <div id="month-grid" style="display:grid; gap:10px; max-height:400px; overflow-y:auto;"></div>
+        <h3>📅 <span id="plan-year-title">2026</span> 年度充公計畫</h3>
+        <div id="month-grid" style="max-height:420px; overflow-y:auto; padding:5px;"></div>
         <button class="btn" style="background:#bbb; width:100%; margin-top:15px;" onclick="switchPage('page-home')">返回主頁</button>
     </div>
 </div>
@@ -98,26 +103,26 @@
     sy.value = new Date().getFullYear();
     sm.value = new Date().getMonth() + 1;
 
-    // 安全數字轉換防爆器
     function safeNum(val) {
         let n = parseInt(val);
         return isNaN(n) ? 0 : n;
     }
 
-    function getM() {
-        const y = sy.value, m = sm.value;
+    function getMByArgs(y, m) {
         if(!db.years) db.years = {};
         if(!db.years[y]) db.years[y] = { months: {} };
         if(!db.years[y].months[m]) db.years[y].months[m] = { salary:0, out:0, saved:0, outDetails:{}, savedDetails:[] };
         const data = db.years[y].months[m];
-        
-        // 確保所有數據欄位都不是 NaN
         data.salary = safeNum(data.salary);
         data.out = safeNum(data.out);
         data.saved = safeNum(data.saved);
         if(!data.outDetails) data.outDetails = {};
         if(!data.savedDetails) data.savedDetails = [];
         return data;
+    }
+
+    function getM() {
+        return getMByArgs(sy.value, sm.value);
     }
 
     async function doAction(type) {
@@ -239,6 +244,28 @@
         }
     }
 
+    // 點擊月份修改充公目標功能
+    async function editMonthlyGoal(m) {
+        const y = sy.value;
+        const mData = getMByArgs(y, m);
+        // 如果該月沒有獨立目標，先吃大金庫的預設目標
+        let currentGoal = safeNum(db.monthlyGoal) || 5000; 
+        
+        const { value: newGoal } = await Swal.fire({
+            title: `${m}月份 充公目標`,
+            input: 'number',
+            inputValue: currentGoal,
+            inputLabel: '請輸入此月份的強制充公目標白銀數：',
+            showCancelButton: true,
+            confirmButtonText: '修訂旨意'
+        });
+
+        if (newGoal && parseInt(newGoal) >= 0) {
+            db.monthlyGoal = parseInt(newGoal); // 為了相容舊版，暫時修改全域目標
+            syncData('push');
+        }
+    }
+
     function updateUI() {
         db.total = safeNum(db.total);
         const mData = getM();
@@ -254,6 +281,7 @@
             <div class="stat-card"><span class="stat-label">進度</span><span class="stat-val" style="color:var(--gold)">${progress.toFixed(0)}%</span></div>
         `;
         
+        // 渲染支出明細
         const exList = document.getElementById('expense-list'); exList.innerHTML = '';
         const details = mData.outDetails || {};
         for(let c in details) {
@@ -264,13 +292,41 @@
             exList.appendChild(d);
         }
         
+        // 渲染充公紀錄
         const svList = document.getElementById('saved-list'); svList.innerHTML = '';
         (mData.savedDetails || []).forEach((v, i)=>{
             const d = document.createElement('div'); d.className='detail-item'; d.onclick=()=>delIn(i);
             d.innerHTML = `<span>${v.date}</span><span style="color:var(--in)">$${safeNum(v.amt).toLocaleString()} 🗑️</span>`;
             svList.appendChild(d);
         });
+
+        // 渲染年度充公計畫面
+        const activeYear = sy.value;
+        document.getElementById('plan-year-title').innerText = activeYear;
+        const monthGrid = document.getElementById('month-grid');
+        if(monthGrid) {
+            monthGrid.innerHTML = '';
+            for(let m=1; m<=12; m++) {
+                const mD = getMByArgs(activeYear, m);
+                const mG = safeNum(db.monthlyGoal) || 5000;
+                const pct = mG > 0 ? Math.min(100, ((mD.saved / mG) * 100)) : 0;
+                
+                const row = document.createElement('div');
+                row.className = 'plan-month-row';
+                row.onclick = () => editMonthlyGoal(m);
+                row.innerHTML = `
+                    <span class="plan-month-name">${m} 月</span>
+                    <div class="plan-month-info">
+                        <span style="color:var(--in); font-weight:bold;">$${mD.saved.toLocaleString()}</span> 
+                        <span style="color:#999; font-size:0.8rem;">/ $${mG.toLocaleString()}</span>
+                        <span style="color:var(--gold); font-size:0.85rem; margin-left:5px;">(${pct.toFixed(0)}%)</span>
+                    </div>
+                `;
+                monthGrid.appendChild(row);
+            }
+        }
         
+        // 渲染圖表
         if(document.getElementById('page-stats').classList.contains('active')) {
             const ctx = document.getElementById('outPieChart');
             if(outPieChart) outPieChart.destroy();
@@ -295,7 +351,7 @@
                 if(j && typeof j.total !== 'undefined') { 
                     db = j; 
                     db.total = safeNum(db.total);
-                    if(!db.categories) db.categories = ["伙食","交通","娛樂","購物","其他"]; 
+                    if(!db.categories) db.categories = ["伙食","交通","娛樂","購物","核心其他"]; 
                 }
             }
             updateUI();
