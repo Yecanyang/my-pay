@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>我們的存摺 V18.6.4 - 阿毛專屬版</title>
+    <title>我們的存摺 V18.7.0 - 約會聯動版</title>
     <link rel="apple-touch-icon" href="image.png">
     <link rel="icon" href="image.png">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -57,7 +57,8 @@
 
         .num-input { width: 100%; padding: 15px; border-radius: 15px; border: 2px solid #eef2f5; box-sizing: border-box; margin-bottom: 8px; font-size: 1.4rem; text-align: center; outline: none; background: #fafafa; color: var(--dark-bg); font-weight: bold; }
         .date-picker-input { width: 100%; padding: 10px; border-radius: 10px; border: 1px solid #eef2f5; box-sizing: border-box; margin-bottom: 15px; font-size: 0.9rem; text-align: center; outline: none; background: #ffffff; color: #555; font-weight: 500; }
-        
+        .source-select-input { width: 100%; padding: 12px; border-radius: 12px; border: 2px solid #eef2f5; box-sizing: border-box; margin-bottom: 12px; font-size: 1rem; text-align-last: center; font-weight: bold; color: var(--dark-bg); outline: none; background: #ffffff; }
+
         .action-btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         .action-btn { border: none; padding: 14px; border-radius: 15px; font-weight: bold; color: white; cursor: pointer; font-size: 0.95rem; display: flex; align-items: center; justify-content: center; gap: 5px; transition: opacity 0.2s; }
         .action-btn:active { opacity: 0.8; }
@@ -191,13 +192,22 @@
                 <span class="bank-tag tag-post">📮 中華郵局</span>
                 <div class="card-mini-title" style="color: #1a8ccb;">🌹 本月甜蜜約會總開銷</div>
                 <div class="card-big-amount" id="date-spend-display" style="color: var(--date-blue);">$ 0</div>
+                
+                <!-- 跨帳本聯動選擇器 -->
+                <div class="card-mini-title" style="margin-bottom: 2px;">💳 請選擇扣款資金來源：</div>
+                <select id="date-source-select" class="source-select-input">
+                    <option value="post">📮 中華郵局 (預設獨立約會錢)</option>
+                    <option value="land">🏦 阿毛帳本 (土地銀行)</option>
+                    <option value="cathay">🎁 阿毛飼養員零用錢 (國泰世華)</option>
+                </select>
+
                 <input type="number" id="date-amount" placeholder="輸入約會金額..." inputmode="numeric" class="num-input">
                 <input type="date" id="date-date" class="date-picker-input">
                 <div class="action-btn-grid" style="grid-template-columns: 1fr;">
-                    <button class="action-btn btn-date" onclick="doDateSpend()">🌹 紀錄約會支出 (郵局出)</button>
+                    <button class="action-btn btn-date" onclick="doDateSpend()">🌹 紀錄約會支出並扣款</button>
                 </div>
             </div>
-            <div class="list-section-title">🌹 本月約會開銷明細 (郵局)</div>
+            <div class="list-section-title">🌹 本月約會開銷明細 (聯動總表)</div>
             <div class="detail-list-wrapper" id="date-spend-list"></div>
         </div>
 
@@ -418,33 +428,107 @@
         syncData('push');
     }
 
+    // 約會聯動核心功能
     async function doDateSpend() {
         const amtInput = document.getElementById('date-amount');
         const dateInput = document.getElementById('date-date');
+        const sourceSelect = document.getElementById('date-source-select');
+        
         const amt = parseInt(amtInput.value);
         if(!amt || amt <= 0) return Swal.fire("請輸入約會開銷金額", "", "warning");
         
         const targetDate = dateInput.value;
         const mData = getMByTargetDate(targetDate);
         const displayDate = formatShortDate(targetDate);
+        const source = sourceSelect.value;
+
+        // 檢查各帳本的餘額是否足夠
+        if (source === 'land' && safeNum(db.total) < amt) {
+            return Swal.fire("土地銀行餘額不足", "阿毛帳本餘額不夠付這次約會喔！", "error");
+        }
+        if (source === 'cathay' && safeNum(mData.bfFundTotal) < amt) {
+            return Swal.fire("零用錢餘額不足", "飼養員給的零用錢不夠付這次約會喔！", "error");
+        }
 
         const { value: note } = await Swal.fire({
-            title: '約會開銷項目 (郵局出帳)',
+            title: '約會開銷項目說明',
             input: 'text',
-            inputPlaceholder: '例如：耶誕大餐、看電影...',
+            inputPlaceholder: '例如：吃大餐、看電影...',
             showCancelButton: true
         });
         if(note === null) return;
         let finalNote = note.trim() || "甜蜜約會行程";
 
+        // 根據不同扣款來源進行聯動扣款與記錄
+        let sourceTag = "";
+        if (source === 'post') {
+            sourceTag = "📮郵局";
+            // 獨立約會帳本，只加總開銷
+        } else if (source === 'land') {
+            sourceTag = "🏦土銀扣款";
+            db.total = safeNum(db.total) - amt;
+            if(!mData.mySpendDetails) mData.mySpendDetails = [];
+            mData.mySpendDetails.push({ amt: amt, cat: "約會開銷", date: displayDate });
+        } else if (source === 'cathay') {
+            sourceTag = "🎁零用錢扣款";
+            mData.bfFundTotal = safeNum(mData.bfFundTotal) - amt;
+            if(!mData.bfSpendDetails) mData.bfSpendDetails = [];
+            mData.bfSpendDetails.push({ amt: amt, note: `約會-${finalNote}`, date: displayDate });
+        }
+
+        // 把紀錄塞進約會總表
         mData.dateTotalSpend = safeNum(mData.dateTotalSpend) + amt;
-        mData.dateSpendDetails.push({ amt: amt, note: finalNote, date: displayDate });
+        mData.dateSpendDetails.push({ 
+            amt: amt, 
+            note: `[${sourceTag}] ${finalNote}`, 
+            date: displayDate,
+            fromSource: source // 紀錄來源以便後續撤銷
+        });
+
+        // 計入總名目統計
         mData.out += amt;
         mData.outDetails["🌹 約會開銷"] = safeNum(mData.outDetails["🌹 約會開銷"]) + amt;
 
+        Swal.fire("約會記帳成功", `金額 $${amt} 已成功從【${sourceTag}】聯動扣除！`, "success");
         amtInput.value = '';
         initDatePickers();
         syncData('push');
+    }
+
+    // 撤銷約會明細時，要把錢還回原本聯動的帳本
+    async function delDateSpend(idx) {
+        const mData = getM();
+        const item = mData.dateSpendDetails[idx];
+        const res = await Swal.fire({ title: '撤銷此筆約會支出？', text: `${item.note} $${safeNum(item.amt)}`, showCancelButton: true });
+        
+        if(res.isConfirmed) {
+            const source = item.fromSource || 'post'; // 如果舊資料沒寫，預設為 post
+
+            // 退款聯動
+            if (source === 'land') {
+                db.total = safeNum(db.total) + safeNum(item.amt);
+                // 尋找阿毛帳本裡當天且金額相同的約會紀錄並刪除
+                if (mData.mySpendDetails) {
+                    const fIdx = mData.mySpendDetails.findIndex(x => x.amt === item.amt && x.cat === "約會開銷");
+                    if (fIdx !== -1) mData.mySpendDetails.splice(fIdx, 1);
+                }
+            } else if (source === 'cathay') {
+                mData.bfFundTotal = safeNum(mData.bfFundTotal) + safeNum(item.amt);
+                // 尋找飼養員帳本裡對應的紀錄並刪除
+                if (mData.bfSpendDetails) {
+                    const fIdx = mData.bfSpendDetails.findIndex(x => x.amt === item.amt && x.note.startsWith("約會-"));
+                    if (fIdx !== -1) mData.bfSpendDetails.splice(fIdx, 1);
+                }
+            }
+
+            // 扣回約會總額與圖表總開銷
+            mData.dateTotalSpend = safeNum(mData.dateTotalSpend) - safeNum(item.amt);
+            mData.out = safeNum(mData.out) - safeNum(item.amt);
+            mData.outDetails["🌹 約會開銷"] = safeNum(mData.outDetails["🌹 約val銷"]) - safeNum(item.amt);
+            
+            mData.dateSpendDetails.splice(idx, 1);
+            syncData('push');
+        }
     }
 
     function updateUI() {
@@ -556,17 +640,6 @@
         const mData = getM(); const item = mData.savedDetails[idx];
         const res = await Swal.fire({ title: '撤銷此筆充公？', text: `$${safeNum(item.amt)}`, showCancelButton: true });
         if(res.isConfirmed) { db.total = safeNum(db.total) + safeNum(item.amt); mData.saved = safeNum(mData.saved) - safeNum(item.amt); mData.savedDetails.splice(idx, 1); syncData('push'); }
-    }
-    async function delDateSpend(idx) {
-        const mData = getM(); const item = mData.dateSpendDetails[idx];
-        const res = await Swal.fire({ title: '撤銷此筆郵局約會支出？', text: `$${safeNum(item.amt)}`, showCancelButton: true });
-        if(res.isConfirmed) {
-            mData.dateTotalSpend = safeNum(mData.dateTotalSpend) - safeNum(item.amt);
-            mData.out = safeNum(mData.out) - safeNum(item.amt);
-            mData.outDetails["🌹 約會開銷"] = safeNum(mData.outDetails["🌹 約會開銷"]) - safeNum(item.amt);
-            mData.dateSpendDetails.splice(idx, 1);
-            syncData('push');
-        }
     }
     async function delBfSpend(idx) {
         const mData = getM(); const item = mData.bfSpendDetails[idx];
