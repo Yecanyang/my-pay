@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>記帳小本本 V24.1.0</title>
+    <title>記帳小本本 V24.2.0</title>
     <link rel="apple-touch-icon" href="image.png">
     <link rel="icon" href="image.png">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -121,6 +121,7 @@
                     <select id="sel-month" onchange="updateUI()"></select>
                 </div>
                 <div id="sync-icon" class="icon-btn" onclick="fetchDataFromGoogleSheets()" title="即時同步">🔄</div>
+                <div class="icon-btn" onclick="openBaseSettings()" title="基地建置">⚙️</div>
             </div>
         </div>
         
@@ -179,16 +180,16 @@
         <div id="page-my-ledger" class="page active">
             <div class="main-card">
                 <span class="bank-tag tag-land">🏦 土地銀行</span>
-                <div class="card-mini-title">阿毛歷史總結餘 (持續滾存)</div>
+                <div class="card-mini-title">阿毛歷史總結餘</div>
                 <div class="card-big-amount" id="my-balance-display" style="color: var(--land-blue);">$ 0</div>
                 <input type="number" id="my-amount" placeholder="輸入金額..." inputmode="numeric" class="num-input">
                 <input type="date" id="my-date" class="date-picker-input">
                 <div class="action-btn-grid">
-                    <button class="action-btn btn-land" onclick="askForRemarkAndDo('my', 'salary')">🧧 領取本職俸祿</button>
+                    <button class="action-btn btn-land" onclick="askForRemarkAndDo('my', 'salary')">🧧 領取精神賠償</button>
                     <button class="action-btn btn-out" onclick="askForRemarkAndDo('my', 'spend')">💸 肆意噴錢</button>
                 </div>
             </div>
-            <div class="list-section-title">🧧 本月俸祿明細 (土銀)</div>
+            <div class="list-section-title">🧧 本月薪資明細 (土銀)</div>
             <div class="detail-list-wrapper" id="my-salary-list"></div>
             <div class="list-section-title">💸 本月個人日常支出明細 (土銀)</div>
             <div class="detail-list-wrapper" id="my-spend-list"></div>
@@ -197,13 +198,13 @@
         <div id="page-bf-feed" class="page">
             <div class="main-card" style="background: #fffbfb; border: 1px solid #ffe3e7;">
                 <span class="bank-tag tag-cathay">🌳 國泰世華</span>
-                <div class="card-mini-title">🐱 飼養員小金庫總餘額 (持續滾存)</div>
+                <div class="card-mini-title">🐱 飼養員小金庫總餘額</div>
                 <div class="card-big-amount" id="bf-balance-display" style="color: var(--bf-pink);">$ 0</div>
                 <input type="number" id="bf-amount" placeholder="輸入金額..." inputmode="numeric" class="num-input">
                 <input type="date" id="bf-date" class="date-picker-input">
                 <div class="action-btn-grid">
-                    <button class="action-btn btn-pink" onclick="askForRemarkAndDo('bf', 'deposit')">💰 家長存入基金</button>
-                    <button class="action-btn btn-out" onclick="askForRemarkAndDo('bf', 'spend')">🐟 購買主罐罐罐</button>
+                    <button class="action-btn btn-pink" onclick="askForRemarkAndDo('bf', 'deposit')">💰 飼養員存入基金</button>
+                    <button class="action-btn btn-out" onclick="askForRemarkAndDo('bf', 'spend')">🐟 罐罐支出</button>
                 </div>
             </div>
             <div class="list-section-title">💰 飼養員基金存入歷史</div>
@@ -234,7 +235,7 @@
         <div id="page-site-ledger" class="page">
             <div class="main-card">
                 <span class="bank-tag tag-site">👷 工地款項</span>
-                <div class="card-mini-title">🏗️ 工地零用金總餘額 (持續滾存)</div>
+                <div class="card-mini-title">🏗️ 工地零用金總餘額</div>
                 <div class="card-big-amount" id="site-balance-display" style="color: var(--site-orange);">$ 0</div>
                 <input type="number" id="site-amount" placeholder="輸入金額..." inputmode="numeric" class="num-input">
                 <div class="input-row-grid">
@@ -244,6 +245,8 @@
                         <option value="竑緯">👤 付款人：竑緯</option>
                         <option value="聖沅">👤 付款人：聖沅</option>
                         <option value="主任">👤 付款人：主任</option>
+                        <option value="印象建設">👤 付款人：印象建設</option>
+                        <option value="巴森營造">👤 付款人：巴森營造</option>
                     </select>
                     <button id="btn-site-paid-toggle" class="status-toggle-btn paid" onclick="toggleSitePaidStatus()">
                         <span id="site-paid-icon">✅</span> <span id="site-paid-text">已付款</span>
@@ -251,13 +254,13 @@
                 </div>
                 <input type="date" id="site-date" class="date-picker-input">
                 <div class="action-btn-grid">
-                    <button class="action-btn btn-site" onclick="askForRemarkAndDo('site', 'income')">🏗️ 工程款項注入</button>
-                    <button class="action-btn btn-out" onclick="askForRemarkAndDo('site', 'spend')">🛠️ 材料/調度支出</button>
+                    <button class="action-btn btn-site" onclick="askForRemarkAndDo('site', 'income')">🏗️ 零用金撥補</button>
+                    <button class="action-btn btn-out" onclick="askForRemarkAndDo('site', 'spend')">🛠️ 零用金支出</button>
                 </div>
             </div>
-            <div class="list-section-title">🏗️ 工程款注入紀錄</div>
+            <div class="list-section-title">🏗️ 零用金撥補紀錄</div>
             <div class="detail-list-wrapper" id="site-income-list"></div>
-            <div class="list-section-title">🛠️ 工地現場調度與支出明細</div>
+            <div class="list-section-title">🛠️ 零用金支出明細</div>
             <div class="detail-list-wrapper" id="site-spend-list"></div>
         </div>
 
@@ -296,12 +299,10 @@
 </div>
 
 <script>
-// 寫死你的 GAS 網址，確保兩端永久同步同一個試算表
-const GAS_URL = 'https://script.google.com/macros/s/AKfycbyDWbRPZvKFjzeoSqO2Db3R1xDiomQ7P2Q-iS6gNmpJKtvWcIUzPnJc_vzjO1xLxYPD/exec';
-
 let db = {
     my_salary: [], my_spend: [],
     'bf-deposit': [], 'bf-spend': [],
+    bf_deposit: [], bf_spend: [],
     date_deposit: [], date_spend: [],
     site_income: [], site_spend: [],
     plan_checked: []
@@ -312,14 +313,31 @@ let currentChartTab = 'my';
 window.onload = function() {
     initYearMonthSelects();
     initDates();
-    // 統一本機快取 Key 值，清除舊版混亂快取
-    let localData = localStorage.getItem('aurora_wallet_v24');
+    
+    // 兼容舊版快取
+    let localData = localStorage.getItem('aurora_wallet_v24') || localStorage.getItem('aurora_wallet_v22');
     if(localData) { try { db = Object.assign(db, JSON.parse(localData)); } catch(e){} }
     updateUI();
     
-    // 網頁開啟時，自動與試算表進行一次同步
-    fetchDataFromGoogleSheets();
+    // 開啟時嘗試自動同步
+    let savedUrl = localStorage.getItem('aurora_gas_url');
+    if(savedUrl) { fetchDataFromGoogleSheets(); }
 };
+
+function openBaseSettings() {
+    let currentUrl = localStorage.getItem('aurora_gas_url') || '';
+    Swal.fire({
+        title: '🛸 雲端基地建置中心',
+        html: `<input id="swal-gas-url" class="swal2-input" style="font-size:0.85rem; width:85%; margin:5px auto;" placeholder="貼上你的 Apps Script 網址" value="${currentUrl}">`,
+        showCancelButton: true, confirmButtonText: '儲存', cancelButtonText: '取消',
+        preConfirm: () => { return document.getElementById('swal-gas-url').value.trim(); }
+    }).then((result) => { 
+        if (result.isConfirmed && result.value) { 
+            localStorage.setItem('aurora_gas_url', result.value); 
+            fetchDataFromGoogleSheets(); 
+        } 
+    });
+}
 
 function initYearMonthSelects() {
     const d = new Date(), curY = d.getFullYear(), curM = d.getMonth() + 1;
@@ -375,6 +393,10 @@ function updateUI() {
 
     const sumAll = (list) => Array.isArray(list) ? list.reduce((sum, i) => sum + (i.amount || 0), 0) : 0;
 
+    // 整合橫線和底線的相容性
+    let bfDepositList = (db['bf-deposit'] && db['bf-deposit'].length) ? db['bf-deposit'] : (db.bf_deposit || []);
+    let bfSpendList = (db['bf-spend'] && db['bf-spend'].length) ? db['bf-spend'] : (db.bf_spend || []);
+
     // 1. 阿毛帳本
     let myAllSalary = sumAll(db.my_salary);
     let myAllSpend = sumAll(db.my_spend);
@@ -385,13 +407,13 @@ function updateUI() {
     renderList('my-spend-list', filterByYM(db.my_spend), 'my_spend');
 
     // 2. 阿毛飼養員
-    let bfAllDep = sumAll(db['bf-deposit'] || db.bf_deposit);
-    let bfAllSpd = sumAll(db['bf-spend'] || db.bf_spend);
+    let bfAllDep = sumAll(bfDepositList);
+    let bfAllSpd = sumAll(bfSpendList);
     let bfBal = bfAllDep - bfAllSpd;
     document.getElementById('bf-balance-display').innerText = "$ " + bfBal.toLocaleString();
     document.getElementById('top-bf-balance').innerText = "$ " + bfBal.toLocaleString();
-    renderList('bf-deposit-list', filterByYM(db['bf-deposit'] || db.bf_deposit), 'bf-deposit');
-    renderList('bf-spend-list', filterByYM(db['bf-spend'] || db.bf_spend), 'bf-spend');
+    renderList('bf-deposit-list', filterByYM(bfDepositList), 'bf-deposit');
+    renderList('bf-spend-list', filterByYM(bfSpendList), 'bf-spend');
 
     // 3. 約會帳本
     let dSpd = filterByYM(db.date_spend);
@@ -415,7 +437,7 @@ function updateUI() {
     if(currentChartTab === 'my') {
         currentSalary = filterByYM(db.my_salary); currentSpend = filterByYM(db.my_spend); titlePrefix = '👤 阿毛帳本';
     } else if(currentChartTab === 'bf') {
-        currentSalary = filterByYM(db['bf-deposit'] || db.bf_deposit); currentSpend = filterByYM(db['bf-spend'] || db.bf_spend); titlePrefix = '🐱 飼養員';
+        currentSalary = filterByYM(bfDepositList); currentSpend = filterByYM(bfSpendList); titlePrefix = '🐱 飼養員';
     } else if(currentChartTab === 'date') {
         currentSalary = []; currentSpend = dSpd; titlePrefix = '🌹 約會支出';
     } else if(currentChartTab === 'site') {
@@ -442,12 +464,19 @@ function renderList(elementId, items, dbKey) {
 }
 
 function fetchDataFromGoogleSheets() {
+    let gasUrl = localStorage.getItem('aurora_gas_url');
+    if(!gasUrl) return;
+    
     const icon = document.getElementById('sync-icon');
     if(icon) icon.style.opacity = '0.4';
     
-    fetch(`${GAS_URL}?action=read`)
+    fetch(`${gasUrl}?action=read`)
         .then(res => res.json())
         .then(data => { 
+            // 同時保存到兩個兼容欄位，防止不見
+            if (data.bf_deposit) data['bf-deposit'] = data.bf_deposit;
+            if (data.bf_spend) data['bf-spend'] = data.bf_spend;
+            
             db = Object.assign(db, data); 
             localStorage.setItem('aurora_wallet_v24', JSON.stringify(db)); 
             updateUI(); 
@@ -463,14 +492,14 @@ function syncToGoogleSheets(actionType, dbKey, payload) {
     localStorage.setItem('aurora_wallet_v24', JSON.stringify(db)); 
     updateUI();
     
-    fetch(GAS_URL, { 
+    let gasUrl = localStorage.getItem('aurora_gas_url');
+    if(!gasUrl) return;
+
+    fetch(gasUrl, { 
         method: "POST", 
         mode: "no-cors", 
         headers: { "Content-Type": "application/json" }, 
         body: JSON.stringify({ action: actionType, key: dbKey, data: payload }) 
-    }).then(() => {
-        // 發送成功後再靜態刷新一次確保狀態
-        localStorage.setItem('aurora_wallet_v24', JSON.stringify(db));
     });
 }
 
@@ -498,6 +527,7 @@ function executeLedgerAction(page, type, val, date, remark) {
         let dbKey = (type === 'deposit') ? 'bf-deposit' : 'bf-spend';
         let newItem = { id: Date.now(), amount: absVal, date: date, remark: remark };
         db[dbKey].push(newItem);
+        db[dbKey.replace('-', '_')].push(newItem); // 雙向寫入兼容
         syncToGoogleSheets('insert', dbKey, newItem);
     } else if (page === 'site') {
         let dbKey = (type === 'income') ? 'site_income' : 'site_spend';
@@ -513,6 +543,7 @@ function executeLedgerAction(page, type, val, date, remark) {
         let linkedKey = (deductSource === 'my') ? 'my_spend' : 'bf-spend';
         let linkedItem = { id: sharedId, amount: absVal, date: date, remark: `[約會支出] ${remark}`, isDateLink: true };
         db[linkedKey].push(linkedItem);
+        db[linkedKey.replace('-', '_')].push(linkedItem);
         syncToGoogleSheets('insert', linkedKey, linkedItem);
     }
 }
@@ -525,10 +556,12 @@ function deleteItem(dbKey, id) {
                 if(target){
                     let linkedKey = (target.source === 'my') ? 'my_spend' : 'bf-spend';
                     db[linkedKey] = db[linkedKey].filter(i => i.id !== id);
+                    db[linkedKey.replace('-', '_')] = db[linkedKey.replace('-', '_')].filter(i => i.id !== id);
                     syncToGoogleSheets('delete', linkedKey, { id: id });
                 }
             }
             db[dbKey] = db[dbKey].filter(i => i.id !== id);
+            if(dbKey.includes('-')) db[dbKey.replace('-', '_')] = db[dbKey.replace('-', '_')].filter(i => i.id !== id);
             syncToGoogleSheets('delete', dbKey, { id: id });
         }
     });
