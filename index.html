@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>我的存摺 V18.0 - 星空粉藍撞色版</title>
+    <title>我的存摺 V18.5 - 阿毛貓罐罐版</title>
     <link rel="apple-touch-icon" href="image.png">
     <link rel="icon" href="image.png">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -19,6 +19,7 @@
             --land-blue: #0052cc; /* 皇家克萊因藍 */
             --bf-pink: #ff8da1;  /* 櫻花初戀粉 */
             --date-blue: #38b6ff; /* 晴空湖水藍 */
+            --gold-premium: #f39c12;
             
             --green: #2ecc71; 
             --out: #e74c3c;
@@ -71,6 +72,7 @@
         .btn-pink { background: var(--bf-pink); }
         .btn-date { background: var(--date-blue); }
         .btn-save { background: var(--green); }
+        .btn-premium { background: linear-gradient(135deg, #ff6b8b, #ff8da1); box-shadow: 0 4px 10px rgba(255,107,139,0.3); }
         .btn-span-2 { grid-column: span 2; }
 
         /* 明細清單樣式 */
@@ -115,7 +117,7 @@
                 <div class="summary-val blue-text" id="top-my-balance" style="color: var(--date-blue);">$ 0</div>
             </div>
             <div>
-                <div class="summary-item">🌳 國泰世華 (男友粉)</div>
+                <div class="summary-item">🌳 國泰世華 (飼養員粉)</div>
                 <div class="summary-val pink-text" id="top-bf-fund">$ 0</div>
             </div>
         </div>
@@ -128,8 +130,8 @@
             <div class="nav-tab-text">我的帳本</div>
         </button>
         <button class="nav-tab" onclick="switchPage('page-bf-feed')">
-            <div class="nav-tab-icon" style="color: var(--bf-pink);">🎁</div>
-            <div class="nav-tab-text">男友零用錢</div>
+            <div class="nav-tab-icon" style="color: var(--bf-pink);">🐶</div>
+            <div class="nav-tab-text">阿毛飼養員</div>
         </button>
         <button class="nav-tab" onclick="switchPage('page-date-ledger')">
             <div class="nav-tab-icon" style="color: var(--date-blue);">🌹</div>
@@ -165,21 +167,30 @@
             <div class="detail-list-wrapper" id="my-spend-list"></div>
         </div>
 
-        <!-- 分頁二：男友零用錢 (國泰世華 - 櫻花初戀粉) -->
+        <!-- 分頁二：阿毛飼養員 (國泰世華 - 櫻花初戀粉) -->
         <div id="page-bf-feed" class="page">
-            <div class="main-card" style="background: #fffbfb; border: 1px solid #ffe3e7;">
+            <div class="main-card" style="background: #fffbfb; border: 1px solid #ffe3e7; padding-top: 35px;">
                 <span class="bank-tag tag-cathay">🌳 國泰世華</span>
-                <div class="card-mini-title" style="color: #c95d70;">🎁 当當前男友進貢零用錢餘額</div>
+                
+                <!-- 新增：頂級貓罐罐基金總額 -->
+                <div style="background: linear-gradient(135deg, #fff5f6, #fff0f2); border-radius: 12px; padding: 8px; margin-bottom: 15px; font-size: 0.85rem; font-weight: bold; color: #e0526c; border: 1px dashed #ffa6b5;">
+                    🐾 阿毛的頂級貓罐罐基金：<span id="cat-can-total" style="font-size: 1.1rem; color: #ff4766;">$ 0</span>
+                </div>
+
+                <div class="card-mini-title" style="color: #c95d70;">🎁 當前飼養員進貢可用餘額</div>
                 <div class="card-big-amount" id="bf-fund-display" style="color: var(--bf-pink);">$ 0</div>
                 <input type="number" id="bf-amount" placeholder="輸入金額..." inputmode="numeric" class="num-input">
                 <div class="action-btn-grid">
-                    <button class="action-btn btn-pink" onclick="doBfIncome()">💰 男友進貢零用錢 (入國泰)</button>
-                    <button class="action-btn btn-out" onclick="doBfSpend()">🛍️ 爽花零用錢 (國泰出帳)</button>
+                    <button class="action-btn btn-pink" onclick="doBfIncome()">💰 飼養員進貢零用錢</button>
+                    <button class="action-btn btn-out" onclick="doBfSpend()">🛍️ 爽花零用錢</button>
+                    <button class="action-btn btn-premium btn-span-2" onclick="doSaveCatCan()">🐾 存成頂級貓罐罐 (鎖定儲蓄)</button>
                 </div>
             </div>
-            <div class="list-section-title">🎁 本月零用錢進貢紀錄 (國泰)</div>
+            <div class="list-section-title">🐾 阿毛的貓罐罐投餵紀錄</div>
+            <div class="detail-list-wrapper" id="cat-can-save-list"></div>
+            <div class="list-section-title">🎁 本月零用錢進貢紀錄</div>
             <div class="detail-list-wrapper" id="bf-income-list"></div>
-            <div class="list-section-title">🛍️ 本月零用錢消費明細 (國泰)</div>
+            <div class="list-section-title">🛍️ 本月零用錢消費明細</div>
             <div class="detail-list-wrapper" id="bf-spend-list"></div>
         </div>
 
@@ -257,6 +268,10 @@
         
         if(!data.dateSpendDetails) data.dateSpendDetails = [];
         if(typeof data.dateTotalSpend === 'undefined') data.dateTotalSpend = 0;
+
+        // 新增貓罐罐資料夾
+        if(typeof data.catCanTotal === 'undefined') data.catCanTotal = 0;
+        if(!data.catCanDetails) data.catCanDetails = [];
         return data;
     }
     function getM() { return getMByArgs(sy.value, sm.value); }
@@ -294,7 +309,7 @@
         syncData('push');
     }
 
-    // 男友零用錢進貢
+    // 飼養員零用錢進貢
     async function doBfIncome() {
         const amtInput = document.getElementById('bf-amount');
         const amt = parseInt(amtInput.value);
@@ -304,12 +319,12 @@
         mData.bfFundTotal = safeNum(mData.bfFundTotal) + amt;
         mData.bfIncomeDetails.push({ amt: amt, date: new Date().toLocaleDateString() });
         
-        Swal.fire("領取成功", `已成功存入零用錢 $${amt} 至國泰世華金庫！`, "success");
+        Swal.fire("進貢成功", `大狗勾飼養員已成功上繳 $${amt} 零用錢！`, "success");
         amtInput.value = '';
         syncData('push');
     }
 
-    // 爽花男友零用錢
+    // 爽花零用錢
     async function doBfSpend() {
         const amtInput = document.getElementById('bf-amount');
         const amt = parseInt(amtInput.value);
@@ -317,11 +332,11 @@
         const mData = getM();
 
         if(safeNum(mData.bfFundTotal) < amt) {
-            return Swal.fire("國泰世華餘額不足", "零用錢花光啦！快催促男友進貢！", "error");
+            return Swal.fire("零用錢餘額不足", "零用錢花光啦！快喵喵叫提醒飼養員！", "error");
         }
 
         const { value: note } = await Swal.fire({
-            title: '零用錢花去哪了？ (國泰出帳)',
+            title: '零用錢花去哪了？',
             input: 'text',
             inputPlaceholder: '例如：買包包、做美甲、吃下午茶...',
             showCancelButton: true
@@ -335,6 +350,26 @@
         mData.out += amt;
         mData.outDetails["🛍️ 零用錢開銷"] = safeNum(mData.outDetails["🛍️ 零用錢開銷"]) + amt;
 
+        amtInput.value = '';
+        syncData('push');
+    }
+
+    // 一鍵存成頂級貓罐罐 (儲蓄)
+    async function doSaveCatCan() {
+        const amtInput = document.getElementById('bf-amount');
+        const amt = parseInt(amtInput.value);
+        if(!amt || amt <= 0) return Swal.fire("請輸入要轉存的金額", "", "warning");
+        const mData = getM();
+
+        if(safeNum(mData.bfFundTotal) < amt) {
+            return Swal.fire("可用零用錢不足", "沒有足夠的餘額可以變成罐罐喔！", "error");
+        }
+
+        mData.bfFundTotal = safeNum(mData.bfFundTotal) - amt;
+        mData.catCanTotal = safeNum(mData.catCanTotal) + amt;
+        mData.catCanDetails.push({ amt: amt, date: new Date().toLocaleDateString() });
+
+        Swal.fire("成功存入罐罐", `已成功將 $${amt} 轉化為阿毛的頂級貓罐罐儲蓄！🐾`, "success");
         amtInput.value = '';
         syncData('push');
     }
@@ -379,6 +414,7 @@
         
         // 分頁二 (國泰)
         document.getElementById('bf-fund-display').innerText = '$ ' + safeNum(mData.bfFundTotal).toLocaleString();
+        document.getElementById('cat-can-total').innerText = '$ ' + safeNum(mData.catCanTotal).toLocaleString();
 
         // 分頁三 (郵局)
         document.getElementById('date-spend-display').innerText = '$ ' + safeNum(mData.dateTotalSpend).toLocaleString();
@@ -405,10 +441,17 @@
             exList.appendChild(d);
         }
 
+        const catList = document.getElementById('cat-can-save-list'); catList.innerHTML = '';
+        (mData.catCanDetails || []).forEach((v, i)=>{
+            const d = document.createElement('div'); d.className='detail-item-row'; d.onclick=()=>delCatCan(i);
+            d.innerHTML = `<span>🐟 飼養員投餵罐罐 (${v.date})</span><span style="color:#ff4766; font-weight:bold;">+$${safeNum(v.amt).toLocaleString()} 🗑️</span>`;
+            catList.appendChild(d);
+        });
+
         const bfIncList = document.getElementById('bf-income-list'); bfIncList.innerHTML = '';
         (mData.bfIncomeDetails || []).forEach((v, i)=>{
             const d = document.createElement('div'); d.className='detail-item-row'; d.onclick=()=>delBfIncome(i);
-            d.innerHTML = `<span>💰 男友進貢 (${v.date})</span><span style="color:var(--green); font-weight:bold;">+$${safeNum(v.amt).toLocaleString()} 🗑️</span>`;
+            d.innerHTML = `<span>🐶 飼養員進貢 (${v.date})</span><span style="color:var(--green); font-weight:bold;">+$${safeNum(v.amt).toLocaleString()} 🗑️</span>`;
             bfIncList.appendChild(d);
         });
 
@@ -468,6 +511,16 @@
         const mData = getM(); const item = mData.bfIncomeDetails[idx];
         const res = await Swal.fire({ title: '撤銷此筆進貢金額？', text: `$${safeNum(item.amt)}`, showCancelButton: true });
         if(res.isConfirmed) { mData.bfFundTotal = safeNum(mData.bfFundTotal) - safeNum(item.amt); mData.bfIncomeDetails.splice(idx, 1); syncData('push'); }
+    }
+    async function delCatCan(idx) {
+        const mData = getM(); const item = mData.catCanDetails[idx];
+        const res = await Swal.fire({ title: '要退回這罐貓罐罐嗎？', text: `退回 $${safeNum(item.amt)} 至可用零用錢`, showCancelButton: true });
+        if(res.isConfirmed) { 
+            mData.bfFundTotal = safeNum(mData.bfFundTotal) + safeNum(item.amt); 
+            mData.catCanTotal = safeNum(mData.catCanTotal) - safeNum(item.amt); 
+            mData.catCanDetails.splice(idx, 1); 
+            syncData('push'); 
+        }
     }
     async function delIn(idx) {
         const mData = getM(); const item = mData.savedDetails[idx];
