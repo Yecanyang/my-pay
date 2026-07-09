@@ -26,7 +26,7 @@
         body { font-family: -apple-system, sans-serif; background: var(--bg); margin: 0; padding: 0; display: flex; justify-content: center; color: var(--text-dark); }
         
         .app-container { width: 100%; max-width: 412px; min-height: 100vh; background: var(--bg); position: relative; box-sizing: border-box; padding-bottom: 30px; box-shadow: 0 0 20px rgba(0,0,0,0.05); }
-        .top-header { background: var(--dark-bg); color: white; padding: 25px 20px 35px 20px; border-bottom-left-radius: 30px; border-bottom-right-radius: 30px; text-align: left; box-shadow: 0 4px 20px rgba(0,0,0,0.15); }
+        .top-header { background: var(--dark-bg); color: white; padding: 25px 20px 30px 20px; border-bottom-left-radius: 30px; border-bottom-right-radius: 30px; text-align: left; box-shadow: 0 4px 20px rgba(0,0,0,0.15); }
         .header-title-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         .header-title { font-size: 1.5rem; font-weight: bold; color: #ffffff; letter-spacing: 1px; }
         
@@ -35,7 +35,7 @@
         .icon-btn:active { transform: scale(0.9); }
         
         .top-summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 12px; }
-        .top-summary-full { border-top: 1px solid rgba(255,255,255,0.1); padding-top: 12px; margin-top: 4px; }
+        .top-summary-full { border-top: 1px solid rgba(255,255,255,0.1); padding-top: 12px; margin-top: 4px; display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
         .summary-item { font-size: 0.8rem; color: #888888; display: flex; align-items: center; gap: 3px; }
         .summary-val { font-size: 1.2rem; font-weight: bold; margin-top: 4px; }
         .summary-val.blue-text { color: var(--date-blue); }
@@ -98,14 +98,16 @@
         .plan-month-card { display: flex; justify-content: space-between; align-items: center; background: var(--card-bg); padding: 15px; border-radius: 15px; margin-bottom: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.02); cursor: pointer; border-left: 4px solid var(--green); }
         .plan-month-label { font-weight: bold; font-size: 0.95rem; }
         
-        .sync-indicator.spinning { display: inline-block; animation: spin 1s linear infinite; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
         .dropdown-selects { display: flex; gap: 5px; align-items: center; }
         .dropdown-selects select { border: 1px solid rgba(255,255,255,0.15); padding: 5px 8px; border-radius: 8px; background: rgba(255,255,255,0.08); color: white; outline: none; font-size: 0.8rem; }
         .dropdown-selects select option { color: black; }
         
         .chart-box { background: var(--card-bg); border-radius: 20px; padding: 15px; margin-bottom: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.02); }
+
+        /* 新增統計頁選單樣式 */
+        .chart-tabs-menu { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; margin-bottom: 15px; }
+        .chart-tab-btn { background: #eef2f5; border: none; padding: 8px 2px; border-radius: 10px; font-size: 0.75rem; font-weight: bold; color: #555; cursor: pointer; transition: all 0.2s; text-align: center; }
+        .chart-tab-btn.active { background: var(--dark-bg); color: white; }
     </style>
 </head>
 <body>
@@ -136,8 +138,14 @@
         </div>
         
         <div class="top-summary-full">
-            <div class="summary-item">🐱 飼養基金總餘額</div>
-            <div class="summary-val pink-text" id="top-bf-balance">$ 0</div>
+            <div>
+                <div class="summary-item">🐱 飼養基金總額</div>
+                <div class="summary-val pink-text" id="top-bf-balance">$ 0</div>
+            </div>
+            <div>
+                <div class="summary-item">🌹 約會本月支出</div>
+                <div class="summary-val blue-text" id="top-date-balance" style="color: #38b6ff;">$ 0</div>
+            </div>
         </div>
     </div>
 
@@ -178,7 +186,7 @@
                 <input type="number" id="my-amount" placeholder="輸入金額..." inputmode="numeric" class="num-input">
                 <input type="date" id="my-date" class="date-picker-input">
                 <div class="action-btn-grid">
-                    <button class="action-btn btn-land" onclick="askForRemarkAndDo('my', 'salary')">🧧 領取精神賠償金</button>
+                    <button class="action-btn btn-land" onclick="askForRemarkAndDo('my', 'salary')">🧧 領取精神賠償</button>
                     <button class="action-btn btn-out" onclick="askForRemarkAndDo('my', 'spend')">💸 肆意噴錢</button>
                 </div>
             </div>
@@ -247,13 +255,13 @@
                 </div>
                 <input type="date" id="site-date" class="date-picker-input">
                 <div class="action-btn-grid">
-                    <button class="action-btn btn-site" onclick="askForRemarkAndDo('site', 'income')">🏗️ 工程款項注入</button>
-                    <button class="action-btn btn-out" onclick="askForRemarkAndDo('site', 'spend')">🛠️ 材料/調度支出</button>
+                    <button class="action-btn btn-site" onclick="askForRemarkAndDo('site', 'income')">🏗️ 零用金撥補</button>
+                    <button class="action-btn btn-out" onclick="askForRemarkAndDo('site', 'spend')">🛠️ 零用金支出</button>
                 </div>
             </div>
-            <div class="list-section-title">🏗️ 工程款注入紀錄</div>
+            <div class="list-section-title">🏗️ 零用金撥補紀錄</div>
             <div class="detail-list-wrapper" id="site-income-list"></div>
-            <div class="list-section-title">🛠️ 工地現場調度與支出明細</div>
+            <div class="list-section-title">🛠️ 零用金支出明細</div>
             <div class="detail-list-wrapper" id="site-spend-list"></div>
         </div>
 
@@ -266,13 +274,26 @@
         </div>
 
         <div id="page-charts" class="page">
+            <div class="chart-tabs-menu">
+                <button class="chart-tab-btn active" onclick="switchChartTab('my', this)">阿毛帳本</button>
+                <button class="chart-tab-btn" onclick="switchChartTab('bf', this)">飼養員</button>
+                <button class="chart-tab-btn" onclick="switchChartTab('date', this)">約會支出</button>
+                <button class="chart-tab-btn" onclick="switchChartTab('site', this)">工地帳本</button>
+            </div>
+
             <div class="chart-box">
-                <div style="font-size:0.85rem; font-weight:bold; margin-bottom:10px;">📊 各帳本總金額分配圖</div>
+                <div style="font-size:0.85rem; font-weight:bold; margin-bottom:10px;" id="bar-chart-title">📈 當月收支對比</div>
+                <canvas id="ctx-bar" height="150"></canvas>
+            </div>
+
+            <div class="chart-box">
+                <div style="font-size:0.85rem; font-weight:bold; margin-bottom:10px;" id="pie-chart-title">📊 當月支出類別細項比例</div>
                 <canvas id="ctx-pie" height="200"></canvas>
             </div>
-            <div class="chart-box">
-                <div style="font-size:0.85rem; font-weight:bold; margin-bottom:10px;">📈 本月總收入 vs 總支出</div>
-                <canvas id="ctx-bar" height="180"></canvas>
+
+            <div class="chart-box" style="background: none; box-shadow: none; padding: 0;">
+                <div style="font-size:0.75rem; color:#7f8c8d; text-align:center; margin-bottom:10px;">📋 歷史總金額分配比例（四大帳本）</div>
+                <canvas id="ctx-total-pie" height="150"></canvas>
             </div>
         </div>
     </div>
@@ -287,6 +308,7 @@ let db = {
     plan_checked: []
 };
 let currentSitePaidStatus = true;
+let currentChartTab = 'my'; // 當前統計頁選擇的帳本
 
 window.onload = function() {
     initYearMonthSelects();
@@ -334,6 +356,13 @@ function switchPage(pageId, event) {
     updateUI();
 }
 
+function switchChartTab(tabKey, btnElement) {
+    document.querySelectorAll('.chart-tab-btn').forEach(b => b.classList.remove('active'));
+    btnElement.classList.add('active');
+    currentChartTab = tabKey;
+    updateUI();
+}
+
 function toggleSitePaidStatus() {
     currentSitePaidStatus = !currentSitePaidStatus;
     const btn = document.getElementById('btn-site-paid-toggle');
@@ -347,7 +376,6 @@ function updateUI() {
     if(!sy || !sm) return;
     const targetY = parseInt(sy.value), targetM = parseInt(sm.value);
     
-    // 篩選當月明細的邏輯 (明細表專用)
     const filterByYM = (list) => {
         if(!Array.isArray(list)) return [];
         return list.filter(item => {
@@ -357,40 +385,37 @@ function updateUI() {
         });
     };
 
-    // 計算歷史總和的輔助函式 (滾存餘額專用)
     const sumAll = (list) => Array.isArray(list) ? list.reduce((sum, i) => sum + (i.amount || 0), 0) : 0;
 
-    // 1. 阿毛帳本 (全歷史滾存計算)
+    // 1. 阿毛帳本
     let myAllSalary = sumAll(db.my_salary);
     let myAllSpend = sumAll(db.my_spend);
     let myBal = myAllSalary - myAllSpend;
-    
     document.getElementById('my-balance-display').innerText = "$ " + myBal.toLocaleString();
     document.getElementById('top-my-balance').innerText = "$ " + myBal.toLocaleString();
     renderList('my-salary-list', filterByYM(db.my_salary), 'my_salary');
     renderList('my-spend-list', filterByYM(db.my_spend), 'my_spend');
 
-    // 2. 阿毛飼養員 (全歷史滾存計算)
+    // 2. 阿毛飼養員
     let bfAllDep = sumAll(db['bf-deposit'] || db.bf_deposit);
     let bfAllSpd = sumAll(db['bf-spend'] || db.bf_spend);
     let bfBal = bfAllDep - bfAllSpd;
-    
     document.getElementById('bf-balance-display').innerText = "$ " + bfBal.toLocaleString();
     document.getElementById('top-bf-balance').innerText = "$ " + bfBal.toLocaleString();
     renderList('bf-deposit-list', filterByYM(db['bf-deposit'] || db.bf_deposit), 'bf-deposit');
     renderList('bf-spend-list', filterByYM(db['bf-spend'] || db.bf_spend), 'bf-spend');
 
-    // 3. 約會帳本 (維持當月累計支出，顯示正數)
+    // 3. 約會帳本
     let dSpd = filterByYM(db.date_spend);
     let dBal = dSpd.reduce((sum, i) => sum + Math.abs(i.amount||0), 0);
     document.getElementById('date-balance-display').innerText = "$ " + dBal.toLocaleString();
+    document.getElementById('top-date-balance').innerText = "$ " + dBal.toLocaleString();
     renderList('date-spend-list', dSpd, 'date_spend');
 
-    // 4. 工地帳本 (全歷史滾存計算)
+    // 4. 工地帳本
     let siteAllInc = sumAll(db.site_income);
     let siteAllSpd = sumAll(db.site_spend);
     let siteBal = siteAllInc - siteAllSpd;
-    
     document.getElementById('site-balance-display').innerText = "$ " + siteBal.toLocaleString();
     document.getElementById('top-site-balance').innerText = "$ " + siteBal.toLocaleString();
     renderList('site-income-list', filterByYM(db.site_income), 'site_income');
@@ -398,11 +423,22 @@ function updateUI() {
 
     renderSavingPlan();
 
-    // 傳送當月收支以便圖表進行分析
-    let mSalaryCurrent = filterByYM(db.my_salary), mSpendCurrent = filterByYM(db.my_spend);
-    let bDepCurrent = filterByYM(db['bf-deposit'] || db.bf_deposit), bSpdCurrent = filterByYM(db['bf-spend'] || db.bf_spend);
-    let sIncCurrent = filterByYM(db.site_income), sSpdCurrent = filterByYM(db.site_spend);
-    renderCharts(myBal, bfBal, dBal, siteBal, mSalaryCurrent, mSpendCurrent, bDepCurrent, bSpdCurrent, dSpd, sIncCurrent, sSpdCurrent);
+    // 取得當前選定帳本的資料以供圖表渲染
+    let currentSalary = [], currentSpend = [], titlePrefix = '';
+    if(currentChartTab === 'my') {
+        currentSalary = filterByYM(db.my_salary); currentSpend = filterByYM(db.my_spend); titlePrefix = '👤 阿毛帳本';
+    } else if(currentChartTab === 'bf') {
+        currentSalary = filterByYM(db['bf-deposit'] || db.bf_deposit); currentSpend = filterByYM(db['bf-spend'] || db.bf_spend); titlePrefix = '🐱 飼養員';
+    } else if(currentChartTab === 'date') {
+        currentSalary = []; currentSpend = dSpd; titlePrefix = '🌹 約會支出';
+    } else if(currentChartTab === 'site') {
+        currentSalary = filterByYM(db.site_income); currentSpend = filterByYM(db.site_spend); titlePrefix = ' 工地帳本';
+    }
+
+    document.getElementById('bar-chart-title').innerText = `📈 ${titlePrefix} - 本月收支對比`;
+    document.getElementById('pie-chart-title').innerText = `📊 ${titlePrefix} - 本月消費細項分析`;
+
+    renderIndependentCharts(currentSalary, currentSpend, myBal, bfBal, dBal, siteBal);
 }
 
 function renderList(elementId, items, dbKey) {
@@ -509,42 +545,75 @@ function togglePlan(dayNum) {
     syncToGoogleSheets('plan_toggle', 'plan_checked', { day: dayNum, checked: isChecking });
 }
 
-let myPieChart = null;
-let myBarChart = null;
+let chartBarInstance = null;
+let chartPieInstance = null;
+let chartTotalPieInstance = null;
 
-function renderCharts(myBal, bfBal, dBal, siteBal, mSalary, mSpend, bDep, bSpd, dSpd, sInc, sSpd) {
+function renderIndependentCharts(salaryItems, spendItems, myBal, bfBal, dBal, siteBal) {
+    // 1. 計算當月收支總數
+    let incSum = salaryItems.reduce((sum, i) => sum + Math.abs(i.amount || 0), 0);
+    let spdSum = spendItems.reduce((sum, i) => sum + Math.abs(i.amount || 0), 0);
+
+    const ctxBar = document.getElementById('ctx-bar');
+    if(ctxBar) {
+        if(chartBarInstance) chartBarInstance.destroy();
+        chartBarInstance = new Chart(ctxBar, {
+            type: 'bar',
+            data: {
+                labels: ['當月金流對比'],
+                datasets: [
+                    { label: '本月收入注入', data: [incSum], backgroundColor: '#2ecc71', hidden: currentChartTab === 'date' },
+                    { label: '本月支出開銷', data: [spdSum], backgroundColor: '#e74c3c' }
+                ]
+            },
+            options: { responsive: true, scales: { y: { beginAtZero: true } } }
+        });
+    }
+
+    // 2. 解析備註以分出圓餅圖的細項
+    let categoryMap = {};
+    spendItems.forEach(item => {
+        let label = item.remark ? item.remark.split(' ')[0].substring(0, 6) : '日常其他';
+        // 排除約會自動連動的標籤前綴
+        label = label.replace('[約會支出]', '');
+        if(!label) label = '日常其他';
+        categoryMap[label] = (categoryMap[label] || 0) + Math.abs(item.amount || 0);
+    });
+
+    let pieLabels = Object.keys(categoryMap);
+    let pieData = Object.values(categoryMap);
+    if(pieLabels.length === 0) { pieLabels = ['尚無支出']; pieData = [0]; }
+
     const ctxPie = document.getElementById('ctx-pie');
     if(ctxPie) {
-        if(myPieChart) myPieChart.destroy();
-        myPieChart = new Chart(ctxPie, {
+        if(chartPieInstance) chartPieInstance.destroy();
+        chartPieInstance = new Chart(ctxPie, {
             type: 'pie',
             data: {
-                labels: ['阿毛總結餘', '阿毛飼養員', '本月約會累計', '工地總餘額'],
+                labels: pieLabels,
                 datasets: [{
-                    data: [myBal, bfBal, dBal, siteBal],
-                    backgroundColor: ['#0052cc', '#ff8da1', '#38b6ff', '#f39c12']
+                    data: pieData,
+                    backgroundColor: ['#ff6384', '#36a2eb', '#cc65fe', '#ffce56', '#4bc0c0', '#ffa07a', '#ba55d3']
                 }]
             },
             options: { responsive: true, plugins: { legend: { position: 'right' } } }
         });
     }
 
-    let totalInc = mSalary.reduce((sum,i)=>sum+Math.abs(i.amount||0),0) + bDep.reduce((sum,i)=>sum+Math.abs(i.amount||0),0) + sInc.reduce((sum,i)=>sum+Math.abs(i.amount||0),0);
-    let totalSpd = mSpend.reduce((sum,i)=>sum+Math.abs(i.amount||0),0) + bSpd.reduce((sum,i)=>sum+Math.abs(i.amount||0),0) + dSpd.reduce((sum,i)=>sum+Math.abs(i.amount||0),0) + sSpd.reduce((sum,i)=>sum+Math.abs(i.amount||0),0);
-
-    const ctxBar = document.getElementById('ctx-bar');
-    if(ctxBar) {
-        if(myBarChart) myBarChart.destroy();
-        myBarChart = new Chart(ctxBar, {
-            type: 'bar',
+    // 3. 最下方的總體金額分配圖
+    const ctxTotalPie = document.getElementById('ctx-total-pie');
+    if(ctxTotalPie) {
+        if(chartTotalPieInstance) chartTotalPieInstance.destroy();
+        chartTotalPieInstance = new Chart(ctxTotalPie, {
+            type: 'pie',
             data: {
-                labels: ['當月收支對比'],
-                datasets: [
-                    { label: '本月收入', data: [totalInc], backgroundColor: '#2ecc71' },
-                    { label: '本月支出', data: [totalSpd], backgroundColor: '#e74c3c' }
-                ]
+                labels: ['阿毛結餘', '飼養員', '約會累計', '工地餘額'],
+                datasets: [{
+                    data: [myBal, bfBal, dBal, siteBal],
+                    backgroundColor: ['#0052cc', '#ff8da1', '#38b6ff', '#f39c12']
+                }]
             },
-            options: { responsive: true, scales: { y: { beginAtZero: true } } }
+            options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
         });
     }
 }
