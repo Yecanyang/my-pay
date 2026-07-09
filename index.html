@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>我們的存摺 V18.6.1 - 雙軌名目修正版</title>
+    <title>我們的存摺 V18.6.4 - 阿毛專屬版</title>
     <link rel="apple-touch-icon" href="image.png">
     <link rel="icon" href="image.png">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -25,7 +25,6 @@
         }
         body { font-family: -apple-system, sans-serif; background: var(--bg); margin: 0; padding: 0; display: flex; justify-content: center; color: var(--text-dark); }
         
-        /* 讓網頁在電腦版與手機版都維持漂亮置中 */
         .app-container { width: 100%; max-width: 412px; min-height: 100vh; background: var(--bg); position: relative; box-sizing: border-box; padding-bottom: 30px; box-shadow: 0 0 20px rgba(0,0,0,0.05); }
         .top-header { background: var(--dark-bg); color: white; padding: 30px 20px 40px 20px; border-bottom-left-radius: 30px; border-bottom-right-radius: 30px; text-align: left; box-shadow: 0 4px 20px rgba(0,0,0,0.15); }
         .header-title-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
@@ -36,7 +35,6 @@
         .summary-val.blue-text { color: var(--date-blue); }
         .summary-val.pink-text { color: var(--bf-pink); }
 
-        /* 五大功能分頁鈕 */
         .nav-tab-container { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; margin: -20px 10px 15px 10px; }
         .nav-tab { background: var(--card-bg); border-radius: 12px; padding: 10px 2px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.05); cursor: pointer; transition: all 0.2s; border: none; outline: none; }
         .nav-tab.active { background: var(--dark-bg); color: white; }
@@ -44,7 +42,6 @@
         .nav-tab-text { font-size: 0.7rem; font-weight: bold; color: #7f8c8d; }
         .nav-tab.active .nav-tab-text { color: white; }
 
-        /* 主要內容卡片 */
         .content-box { padding: 0 15px; }
         .page { display: none; }
         .page.active { display: block; }
@@ -58,7 +55,9 @@
         .tag-cathay { background: var(--bf-pink); }
         .tag-post { background: var(--date-blue); }
 
-        .num-input { width: 100%; padding: 15px; border-radius: 15px; border: 2px solid #eef2f5; box-sizing: border-box; margin-bottom: 12px; font-size: 1.4rem; text-align: center; outline: none; background: #fafafa; color: var(--dark-bg); font-weight: bold; }
+        .num-input { width: 100%; padding: 15px; border-radius: 15px; border: 2px solid #eef2f5; box-sizing: border-box; margin-bottom: 8px; font-size: 1.4rem; text-align: center; outline: none; background: #fafafa; color: var(--dark-bg); font-weight: bold; }
+        .date-picker-input { width: 100%; padding: 10px; border-radius: 10px; border: 1px solid #eef2f5; box-sizing: border-box; margin-bottom: 15px; font-size: 0.9rem; text-align: center; outline: none; background: #ffffff; color: #555; font-weight: 500; }
+        
         .action-btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         .action-btn { border: none; padding: 14px; border-radius: 15px; font-weight: bold; color: white; cursor: pointer; font-size: 0.95rem; display: flex; align-items: center; justify-content: center; gap: 5px; transition: opacity 0.2s; }
         .action-btn:active { opacity: 0.8; }
@@ -106,7 +105,7 @@
         </div>
         <div class="top-summary-grid">
             <div>
-                <div class="summary-item">🏦 土地銀行 (大人藍)</div>
+                <div class="summary-item">🏦 土地銀行 (阿毛藍)</div>
                 <div class="summary-val blue-text" id="top-my-balance">$ 0</div>
             </div>
             <div>
@@ -120,7 +119,7 @@
     <div class="nav-tab-container">
         <button class="nav-tab active" onclick="switchPage('page-my-ledger', event)">
             <div class="nav-tab-icon" style="color: var(--land-blue);">📋</div>
-            <div class="nav-tab-text">我的帳本</div>
+            <div class="nav-tab-text">阿毛帳本</div>
         </button>
         <button class="nav-tab" onclick="switchPage('page-bf-feed', event)">
             <div class="nav-tab-icon" style="color: var(--bf-pink);">🐶</div>
@@ -142,13 +141,14 @@
 
     <div class="content-box">
         
-        <!-- 分頁一：我的帳本 -->
+        <!-- 分頁一：阿毛帳本 -->
         <div id="page-my-ledger" class="page active">
             <div class="main-card">
                 <span class="bank-tag tag-land">🏦 土地銀行</span>
-                <div class="card-mini-title" id="ledger-month-title">本月大人可用結餘</div>
+                <div class="card-mini-title" id="ledger-month-title">本月阿毛可用結餘</div>
                 <div class="card-big-amount" id="my-balance-display" style="color: var(--land-blue);">$ 0</div>
                 <input type="number" id="my-amount" placeholder="輸入金額..." inputmode="numeric" class="num-input">
+                <input type="date" id="my-date" class="date-picker-input">
                 <div class="action-btn-grid">
                     <button class="action-btn btn-land btn-span-2" onclick="doMyAction('salary')">🧧 領取本職俸祿 (入土銀)</button>
                     <button class="action-btn btn-out btn-span-2" onclick="doMyAction('spend')">💸 肆意噴錢 (土銀日常出帳)</button>
@@ -167,9 +167,10 @@
                 <div style="background: linear-gradient(135deg, #fff5f6, #fff0f2); border-radius: 12px; padding: 8px; margin-bottom: 15px; font-size: 0.85rem; font-weight: bold; color: #e0526c; border: 1px dashed #ffa6b5;">
                     🐾 阿毛的頂級貓罐罐基金：<span id="cat-can-total" style="font-size: 1.1rem; color: #ff4766;">$ 0</span>
                 </div>
-                <div class="card-mini-title" style="color: #c95d70;">🎁 當前飼養員進貢可用餘額</div>
+                <div class="card-mini-title" style="color: #c95d70;">🎁 阿毛可用餘額</div>
                 <div class="card-big-amount" id="bf-fund-display" style="color: var(--bf-pink);">$ 0</div>
                 <input type="number" id="bf-amount" placeholder="輸入金額..." inputmode="numeric" class="num-input">
+                <input type="date" id="bf-date" class="date-picker-input">
                 <div class="action-btn-grid">
                     <button class="action-btn btn-pink" onclick="doBfIncome()">💰 飼養員進貢零用錢</button>
                     <button class="action-btn btn-out" onclick="doBfSpend()">🛍️ 爽花零用錢</button>
@@ -191,6 +192,7 @@
                 <div class="card-mini-title" style="color: #1a8ccb;">🌹 本月甜蜜約會總開銷</div>
                 <div class="card-big-amount" id="date-spend-display" style="color: var(--date-blue);">$ 0</div>
                 <input type="number" id="date-amount" placeholder="輸入約會金額..." inputmode="numeric" class="num-input">
+                <input type="date" id="date-date" class="date-picker-input">
                 <div class="action-btn-grid" style="grid-template-columns: 1fr;">
                     <button class="action-btn btn-date" onclick="doDateSpend()">🌹 紀錄約會支出 (郵局出)</button>
                 </div>
@@ -237,6 +239,21 @@
     sy.value = new Date().getFullYear();
     sm.value = new Date().getMonth() + 1;
 
+    function initDatePickers() {
+        const todayStr = new Date().toISOString().split('T')[0];
+        ['my-date', 'bf-date', 'date-date'].forEach(id => {
+            const el = document.getElementById(id);
+            if(el) el.value = todayStr;
+        });
+    }
+
+    function formatShortDate(dateStr) {
+        if(!dateStr) return new Date().toLocaleDateString();
+        const parts = dateStr.split('-');
+        if(parts.length === 3) return `${parseInt(parts[1])}/${parseInt(parts[2])}`;
+        return dateStr;
+    }
+
     function safeNum(val) { let n = parseInt(val); return isNaN(n) ? 0 : n; }
 
     function getMByArgs(y, m) {
@@ -265,16 +282,29 @@
     }
     function getM() { return getMByArgs(sy.value, sm.value); }
 
+    function getMByTargetDate(dateStr) {
+        if(!dateStr) return getM();
+        const parts = dateStr.split('-');
+        if(parts.length === 3) {
+            return getMByArgs(parts[0], parseInt(parts[1]));
+        }
+        return getM();
+    }
+
     async function doMyAction(type) {
         const amtInput = document.getElementById('my-amount');
+        const dateInput = document.getElementById('my-date');
         const amt = parseInt(amtInput.value);
         if(!amt || amt <= 0) return Swal.fire("請輸入正確金額", "", "warning");
-        const mData = getM();
+        
+        const targetDate = dateInput.value;
+        const mData = getMByTargetDate(targetDate);
+        const displayDate = formatShortDate(targetDate);
 
         if(type === 'salary') {
             db.total = safeNum(db.total) + amt;
             mData.salary += amt;
-            mData.salaryDetails.push({amt: amt, date: new Date().toLocaleDateString()});
+            mData.salaryDetails.push({amt: amt, date: displayDate});
         } else if(type === 'spend') {
             const { value: cat } = await Swal.fire({
                 title: '選擇支出名目 (土銀出帳)',
@@ -287,15 +317,16 @@
             mData.out += amt;
             mData.outDetails[cat] = safeNum(mData.outDetails[cat]) + amt;
             if(!mData.mySpendDetails) mData.mySpendDetails = [];
-            mData.mySpendDetails.push({ amt: amt, cat: cat, date: new Date().toLocaleDateString() });
+            mData.mySpendDetails.push({ amt: amt, cat: cat, date: displayDate });
         } else if(type === 'force_save') {
-            if(safeNum(db.total) < amt) return Swal.fire("土地銀行餘額不足", "沒錢充公啦大人！", "error");
+            if(safeNum(db.total) < amt) return Swal.fire("土地銀行餘額不足", "沒錢充公啦阿毛！", "error");
             db.total = safeNum(db.total) - amt;
             mData.saved += amt;
-            mData.savedDetails.push({amt: amt, date: new Date().toLocaleDateString()});
+            mData.savedDetails.push({amt: amt, date: displayDate});
         }
 
         amtInput.value = '';
+        initDatePickers();
         syncData('push');
     }
 
@@ -314,23 +345,32 @@
 
     async function doBfIncome() {
         const amtInput = document.getElementById('bf-amount');
+        const dateInput = document.getElementById('bf-date');
         const amt = parseInt(amtInput.value);
         if(!amt || amt <= 0) return Swal.fire("請輸入進貢金額", "", "warning");
-        const mData = getM();
+        
+        const targetDate = dateInput.value;
+        const mData = getMByTargetDate(targetDate);
+        const displayDate = formatShortDate(targetDate);
 
         mData.bfFundTotal = safeNum(mData.bfFundTotal) + amt;
-        mData.bfIncomeDetails.push({ amt: amt, date: new Date().toLocaleDateString() });
+        mData.bfIncomeDetails.push({ amt: amt, date: displayDate });
         
         Swal.fire("進貢成功", `大狗勾飼養員已成功上繳 $${amt} 零用錢！`, "success");
         amtInput.value = '';
+        initDatePickers();
         syncData('push');
     }
 
     async function doBfSpend() {
         const amtInput = document.getElementById('bf-amount');
+        const dateInput = document.getElementById('bf-date');
         const amt = parseInt(amtInput.value);
         if(!amt || amt <= 0) return Swal.fire("請輸入消費金額", "", "warning");
-        const mData = getM();
+        
+        const targetDate = dateInput.value;
+        const mData = getMByTargetDate(targetDate);
+        const displayDate = formatShortDate(targetDate);
 
         if(safeNum(mData.bfFundTotal) < amt) {
             return Swal.fire("零用錢餘額不足", "零用錢花光啦！快喵喵叫提醒飼養員！", "error");
@@ -345,19 +385,24 @@
         if(!cat) return;
 
         mData.bfFundTotal = safeNum(mData.bfFundTotal) - amt;
-        mData.bfSpendDetails.push({ amt: amt, note: cat, date: new Date().toLocaleDateString() });
+        mData.bfSpendDetails.push({ amt: amt, note: cat, date: displayDate });
         mData.out += amt;
         mData.outDetails[`🎁 ${cat}`] = safeNum(mData.outDetails[`🎁 ${cat}`]) + amt;
 
         amtInput.value = '';
+        initDatePickers();
         syncData('push');
     }
 
     async function doSaveCatCan() {
         const amtInput = document.getElementById('bf-amount');
+        const dateInput = document.getElementById('bf-date');
         const amt = parseInt(amtInput.value);
         if(!amt || amt <= 0) return Swal.fire("請輸入要轉存的金額", "", "warning");
-        const mData = getM();
+        
+        const targetDate = dateInput.value;
+        const mData = getMByTargetDate(targetDate);
+        const displayDate = formatShortDate(targetDate);
 
         if(safeNum(mData.bfFundTotal) < amt) {
             return Swal.fire("可用零用錢不足", "沒有足夠的餘額可以變成罐罐喔！", "error");
@@ -365,18 +410,23 @@
 
         mData.bfFundTotal = safeNum(mData.bfFundTotal) - amt;
         mData.catCanTotal = safeNum(mData.catCanTotal) + amt;
-        mData.catCanDetails.push({ amt: amt, date: new Date().toLocaleDateString() });
+        mData.catCanDetails.push({ amt: amt, date: displayDate });
 
         Swal.fire("成功存入罐罐", `已成功將 $${amt} 轉化為阿毛的頂級貓罐罐儲蓄！🐾`, "success");
         amtInput.value = '';
+        initDatePickers();
         syncData('push');
     }
 
     async function doDateSpend() {
         const amtInput = document.getElementById('date-amount');
+        const dateInput = document.getElementById('date-date');
         const amt = parseInt(amtInput.value);
         if(!amt || amt <= 0) return Swal.fire("請輸入約會開銷金額", "", "warning");
-        const mData = getM();
+        
+        const targetDate = dateInput.value;
+        const mData = getMByTargetDate(targetDate);
+        const displayDate = formatShortDate(targetDate);
 
         const { value: note } = await Swal.fire({
             title: '約會開銷項目 (郵局出帳)',
@@ -388,11 +438,12 @@
         let finalNote = note.trim() || "甜蜜約會行程";
 
         mData.dateTotalSpend = safeNum(mData.dateTotalSpend) + amt;
-        mData.dateSpendDetails.push({ amt: amt, note: finalNote, date: new Date().toLocaleDateString() });
+        mData.dateSpendDetails.push({ amt: amt, note: finalNote, date: displayDate });
         mData.out += amt;
         mData.outDetails["🌹 約會開銷"] = safeNum(mData.outDetails["🌹 約會開銷"]) + amt;
 
         amtInput.value = '';
+        initDatePickers();
         syncData('push');
     }
 
@@ -402,7 +453,7 @@
         
         document.getElementById('top-my-balance').innerText = '$ ' + db.total.toLocaleString();
         document.getElementById('top-bf-fund').innerText = '$ ' + safeNum(mData.bfFundTotal).toLocaleString();
-        document.getElementById('ledger-month-title').innerText = `${sm.value}月 大人可用結餘`;
+        document.getElementById('ledger-month-title').innerText = `${sm.value}月 阿毛可用結餘`;
         document.getElementById('my-balance-display').innerText = '$ ' + db.total.toLocaleString();
         document.getElementById('bf-fund-display').innerText = '$ ' + safeNum(mData.bfFundTotal).toLocaleString();
         document.getElementById('cat-can-total').innerText = '$ ' + safeNum(mData.catCanTotal).toLocaleString();
@@ -429,7 +480,7 @@
         const catList = document.getElementById('cat-can-save-list'); catList.innerHTML = '';
         (mData.catCanDetails || []).forEach((v, i)=>{
             const d = document.createElement('div'); d.className='detail-item-row'; d.onclick=()=>delCatCan(i);
-            d.innerHTML = `<span>🐟 飼養員投餵罐罐 (${v.date})</span><span style="color:#ff4766; font-weight:bold;">+$${safeNum(v.amt).toLocaleString()} 🗑️</span>`;
+            d.innerHTML = `<span>🐟 罐罐固定資產 (${v.date})</span><span style="color:#ff4766; font-weight:bold;">+$${safeNum(v.amt).toLocaleString()} 🗑️</span>`;
             catList.appendChild(d);
         });
 
@@ -574,7 +625,11 @@
         if(e && e.currentTarget) { e.currentTarget.classList.add('active'); }
         updateUI(); 
     }
-    window.onload = () => syncData('pull');
+    
+    window.onload = () => {
+        initDatePickers();
+        syncData('pull');
+    };
 </script>
 </body>
 </html>
