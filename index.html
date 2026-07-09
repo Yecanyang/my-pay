@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>記帳小本本</title>
+    <title>記帳小本本 V24.1.0</title>
     <link rel="apple-touch-icon" href="image.png">
     <link rel="icon" href="image.png">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -104,7 +104,6 @@
         
         .chart-box { background: var(--card-bg); border-radius: 20px; padding: 15px; margin-bottom: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.02); }
 
-        /* 新增統計頁選單樣式 */
         .chart-tabs-menu { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; margin-bottom: 15px; }
         .chart-tab-btn { background: #eef2f5; border: none; padding: 8px 2px; border-radius: 10px; font-size: 0.75rem; font-weight: bold; color: #555; cursor: pointer; transition: all 0.2s; text-align: center; }
         .chart-tab-btn.active { background: var(--dark-bg); color: white; }
@@ -122,7 +121,6 @@
                     <select id="sel-month" onchange="updateUI()"></select>
                 </div>
                 <div id="sync-icon" class="icon-btn" onclick="fetchDataFromGoogleSheets()" title="即時同步">🔄</div>
-                <div class="icon-btn" onclick="openBaseSettings()" title="基地建置">⚙️</div>
             </div>
         </div>
         
@@ -186,11 +184,11 @@
                 <input type="number" id="my-amount" placeholder="輸入金額..." inputmode="numeric" class="num-input">
                 <input type="date" id="my-date" class="date-picker-input">
                 <div class="action-btn-grid">
-                    <button class="action-btn btn-land" onclick="askForRemarkAndDo('my', 'salary')">🧧 領取精神賠償</button>
+                    <button class="action-btn btn-land" onclick="askForRemarkAndDo('my', 'salary')">🧧 領取本職俸祿</button>
                     <button class="action-btn btn-out" onclick="askForRemarkAndDo('my', 'spend')">💸 肆意噴錢</button>
                 </div>
             </div>
-            <div class="list-section-title">🧧 本月薪資明細 (土銀)</div>
+            <div class="list-section-title">🧧 本月俸祿明細 (土銀)</div>
             <div class="detail-list-wrapper" id="my-salary-list"></div>
             <div class="list-section-title">💸 本月個人日常支出明細 (土銀)</div>
             <div class="detail-list-wrapper" id="my-spend-list"></div>
@@ -204,8 +202,8 @@
                 <input type="number" id="bf-amount" placeholder="輸入金額..." inputmode="numeric" class="num-input">
                 <input type="date" id="bf-date" class="date-picker-input">
                 <div class="action-btn-grid">
-                    <button class="action-btn btn-pink" onclick="askForRemarkAndDo('bf', 'deposit')">💰 飼養員存入基金</button>
-                    <button class="action-btn btn-out" onclick="askForRemarkAndDo('bf', 'spend')">🐟 罐罐購買</button>
+                    <button class="action-btn btn-pink" onclick="askForRemarkAndDo('bf', 'deposit')">💰 家長存入基金</button>
+                    <button class="action-btn btn-out" onclick="askForRemarkAndDo('bf', 'spend')">🐟 購買主罐罐罐</button>
                 </div>
             </div>
             <div class="list-section-title">💰 飼養員基金存入歷史</div>
@@ -246,8 +244,6 @@
                         <option value="竑緯">👤 付款人：竑緯</option>
                         <option value="聖沅">👤 付款人：聖沅</option>
                         <option value="主任">👤 付款人：主任</option>
-                        <option value="印象建設">👤 付款人：印象建設</option>
-                        <option value="巴森營造">👤 付款人：巴森營造</option>
                     </select>
                     <button id="btn-site-paid-toggle" class="status-toggle-btn paid" onclick="toggleSitePaidStatus()">
                         <span id="site-paid-icon">✅</span> <span id="site-paid-text">已付款</span>
@@ -255,13 +251,13 @@
                 </div>
                 <input type="date" id="site-date" class="date-picker-input">
                 <div class="action-btn-grid">
-                    <button class="action-btn btn-site" onclick="askForRemarkAndDo('site', 'income')">🏗️ 零用金撥補</button>
-                    <button class="action-btn btn-out" onclick="askForRemarkAndDo('site', 'spend')">🛠️ 零用金支出</button>
+                    <button class="action-btn btn-site" onclick="askForRemarkAndDo('site', 'income')">🏗️ 工程款項注入</button>
+                    <button class="action-btn btn-out" onclick="askForRemarkAndDo('site', 'spend')">🛠️ 材料/調度支出</button>
                 </div>
             </div>
-            <div class="list-section-title">🏗️ 零用金撥補紀錄</div>
+            <div class="list-section-title">🏗️ 工程款注入紀錄</div>
             <div class="detail-list-wrapper" id="site-income-list"></div>
-            <div class="list-section-title">🛠️ 零用金支出明細</div>
+            <div class="list-section-title">🛠️ 工地現場調度與支出明細</div>
             <div class="detail-list-wrapper" id="site-spend-list"></div>
         </div>
 
@@ -300,6 +296,9 @@
 </div>
 
 <script>
+// 寫死你的 GAS 網址，確保兩端永久同步同一個試算表
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbyDWbRPZvKFjzeoSqO2Db3R1xDiomQ7P2Q-iS6gNmpJKtvWcIUzPnJc_vzjO1xLxYPD/exec';
+
 let db = {
     my_salary: [], my_spend: [],
     'bf-deposit': [], 'bf-spend': [],
@@ -308,30 +307,19 @@ let db = {
     plan_checked: []
 };
 let currentSitePaidStatus = true;
-let currentChartTab = 'my'; // 當前統計頁選擇的帳本
+let currentChartTab = 'my';
 
 window.onload = function() {
     initYearMonthSelects();
     initDates();
-    let localData = localStorage.getItem('aurora_wallet_v22');
+    // 統一本機快取 Key 值，清除舊版混亂快取
+    let localData = localStorage.getItem('aurora_wallet_v24');
     if(localData) { try { db = Object.assign(db, JSON.parse(localData)); } catch(e){} }
     updateUI();
-    let savedUrl = localStorage.getItem('aurora_gas_url');
-    if(savedUrl) { fetchDataFromGoogleSheets(); } else {
-        localStorage.setItem('aurora_gas_url', 'https://script.google.com/macros/s/AKfycbyDWbRPZvKFjzeoSqO2Db3R1xDiomQ7P2Q-iS6gNmpJKtvWcIUzPnJc_vzjO1xLxYPD/exec');
-        fetchDataFromGoogleSheets();
-    }
+    
+    // 網頁開啟時，自動與試算表進行一次同步
+    fetchDataFromGoogleSheets();
 };
-
-function openBaseSettings() {
-    let currentUrl = localStorage.getItem('aurora_gas_url') || '';
-    Swal.fire({
-        title: '🛸 雲端基地建置中心',
-        html: `<input id="swal-gas-url" class="swal2-input" style="font-size:0.85rem; width:85%; margin:5px auto;" placeholder="API URL" value="${currentUrl}">`,
-        showCancelButton: true, confirmButtonText: '儲存', cancelButtonText: '取消',
-        preConfirm: () => { return document.getElementById('swal-gas-url').value.trim(); }
-    }).then((result) => { if (result.isConfirmed) { localStorage.setItem('aurora_gas_url', result.value); fetchDataFromGoogleSheets(); } });
-}
 
 function initYearMonthSelects() {
     const d = new Date(), curY = d.getFullYear(), curM = d.getMonth() + 1;
@@ -423,7 +411,6 @@ function updateUI() {
 
     renderSavingPlan();
 
-    // 取得當前選定帳本的資料以供圖表渲染
     let currentSalary = [], currentSpend = [], titlePrefix = '';
     if(currentChartTab === 'my') {
         currentSalary = filterByYM(db.my_salary); currentSpend = filterByYM(db.my_spend); titlePrefix = '👤 阿毛帳本';
@@ -432,7 +419,7 @@ function updateUI() {
     } else if(currentChartTab === 'date') {
         currentSalary = []; currentSpend = dSpd; titlePrefix = '🌹 約會支出';
     } else if(currentChartTab === 'site') {
-        currentSalary = filterByYM(db.site_income); currentSpend = filterByYM(db.site_spend); titlePrefix = ' 工地帳本';
+        currentSalary = filterByYM(db.site_income); currentSpend = filterByYM(db.site_spend); titlePrefix = '👷 工地帳本';
     }
 
     document.getElementById('bar-chart-title').innerText = `📈 ${titlePrefix} - 本月收支對比`;
@@ -455,14 +442,36 @@ function renderList(elementId, items, dbKey) {
 }
 
 function fetchDataFromGoogleSheets() {
-    let gasUrl = localStorage.getItem('aurora_gas_url');
-    if(!gasUrl) return;
-    fetch(`${gasUrl}?action=read`).then(res => res.json()).then(data => { db = Object.assign(db, data); localStorage.setItem('aurora_wallet_v22', JSON.stringify(db)); updateUI(); });
+    const icon = document.getElementById('sync-icon');
+    if(icon) icon.style.opacity = '0.4';
+    
+    fetch(`${GAS_URL}?action=read`)
+        .then(res => res.json())
+        .then(data => { 
+            db = Object.assign(db, data); 
+            localStorage.setItem('aurora_wallet_v24', JSON.stringify(db)); 
+            updateUI(); 
+            if(icon) icon.style.opacity = '1';
+        })
+        .catch(err => {
+            if(icon) icon.style.opacity = '1';
+            console.error("同步失敗:", err);
+        });
 }
 
 function syncToGoogleSheets(actionType, dbKey, payload) {
-    let gasUrl = localStorage.getItem('aurora_gas_url');
-    fetch(gasUrl, { method: "POST", mode: "no-cors", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: actionType, key: dbKey, data: payload }) }).then(() => { localStorage.setItem('aurora_wallet_v22', JSON.stringify(db)); updateUI(); });
+    localStorage.setItem('aurora_wallet_v24', JSON.stringify(db)); 
+    updateUI();
+    
+    fetch(GAS_URL, { 
+        method: "POST", 
+        mode: "no-cors", 
+        headers: { "Content-Type": "application/json" }, 
+        body: JSON.stringify({ action: actionType, key: dbKey, data: payload }) 
+    }).then(() => {
+        // 發送成功後再靜態刷新一次確保狀態
+        localStorage.setItem('aurora_wallet_v24', JSON.stringify(db));
+    });
 }
 
 function askForRemarkAndDo(page, type) {
@@ -550,7 +559,6 @@ let chartPieInstance = null;
 let chartTotalPieInstance = null;
 
 function renderIndependentCharts(salaryItems, spendItems, myBal, bfBal, dBal, siteBal) {
-    // 1. 計算當月收支總數
     let incSum = salaryItems.reduce((sum, i) => sum + Math.abs(i.amount || 0), 0);
     let spdSum = spendItems.reduce((sum, i) => sum + Math.abs(i.amount || 0), 0);
 
@@ -570,11 +578,9 @@ function renderIndependentCharts(salaryItems, spendItems, myBal, bfBal, dBal, si
         });
     }
 
-    // 2. 解析備註以分出圓餅圖的細項
     let categoryMap = {};
     spendItems.forEach(item => {
         let label = item.remark ? item.remark.split(' ')[0].substring(0, 6) : '日常其他';
-        // 排除約會自動連動的標籤前綴
         label = label.replace('[約會支出]', '');
         if(!label) label = '日常其他';
         categoryMap[label] = (categoryMap[label] || 0) + Math.abs(item.amount || 0);
@@ -600,7 +606,6 @@ function renderIndependentCharts(salaryItems, spendItems, myBal, bfBal, dBal, si
         });
     }
 
-    // 3. 最下方的總體金額分配圖
     const ctxTotalPie = document.getElementById('ctx-total-pie');
     if(ctxTotalPie) {
         if(chartTotalPieInstance) chartTotalPieInstance.destroy();
