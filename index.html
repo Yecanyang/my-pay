@@ -58,7 +58,7 @@
         .tag-site { background: var(--site-orange); }
 
         .num-input { width: 100%; padding: 15px; border-radius: 15px; border: 2px solid #eef2f5; box-sizing: border-box; margin-bottom: 8px; font-size: 1.4rem; text-align: center; outline: none; background: #fafafa; color: var(--dark-bg); font-weight: bold; }
-        .date-picker-input { width: 100%; padding: 10px; border-radius: 10px; border: 1px solid #eef2f5; box-sizing: border-box; margin-bottom: 12px; font-size: 0.9rem; text-align: center; outline: none; background: #ffffff; color: #555; font-weight: 500; }
+        .date-picker-input { width: 100%; padding: 10px; border-radius: 10px; border: 1px solid #eef2f5; box-sizing: border-box; margin-bottom: 12px; font-size: 0.9rem; text-align: center; outline: none; background: #ffffff; color: #555; font-weight: 500; display: block !important; visibility: visible !important; }
         .source-select-input { width: 100%; padding: 12px; border-radius: 12px; border: 2px solid #eef2f5; box-sizing: border-box; margin-bottom: 12px; font-size: 1rem; text-align-last: center; font-weight: bold; color: var(--dark-bg); outline: none; background: #ffffff; }
 
         .input-row-grid { display: grid; grid-template-columns: 1.2fr 1fr; gap: 10px; margin-bottom: 12px; }
@@ -90,28 +90,28 @@
         .plan-month-card { display: flex; justify-content: space-between; align-items: center; background: var(--card-bg); padding: 15px; border-radius: 15px; margin-bottom: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.02); cursor: pointer; border-left: 4px solid var(--land-blue); }
         .plan-month-label { font-weight: bold; font-size: 0.95rem; }
         
-        .settings-gear { cursor: pointer; font-size: 1.2rem; opacity: 0.7; padding: 5px; transition: transform 0.2s; }
-        .settings-gear:hover { transform: rotate(45deg); opacity: 1; }
+        .sync-indicator { cursor: pointer; font-size: 1.1rem; opacity: 0.8; padding: 5px; animation: none; }
+        .sync-indicator.spinning { display: inline-block; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
         .dropdown-selects { display: flex; gap: 5px; align-items: center; }
         .dropdown-selects select { border: 1px solid rgba(255,255,255,0.15); padding: 5px 8px; border-radius: 8px; background: rgba(255,255,255,0.08); color: white; outline: none; font-size: 0.8rem; }
         .dropdown-selects select option { color: black; }
         
-        .loading-mask { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(18,18,18,0.8); display: none; align-items: center; justify-content: center; z-index: 10000; font-weight: bold; color: white; font-size: 1.1rem; }
         .chart-box { background: var(--card-bg); border-radius: 20px; padding: 15px; margin-bottom: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.02); }
     </style>
 </head>
 <body>
 
-<div id="loading" class="loading-mask">🌌 正在同步極光星空金庫...</div>
-
 <div class="app-container">
+    <!-- 頂部面板 -->
     <div class="top-header">
         <div class="header-title-bar">
             <div class="header-title">我們的存摺</div>
             <div class="dropdown-selects">
                 <select id="sel-year" onchange="updateUI()"></select>
                 <select id="sel-month" onchange="updateUI()"></select>
-                <div class="settings-gear" onclick="openSettingsMenu()">⚙️</div>
+                <div id="sync-icon" class="sync-indicator" onclick="fetchDataFromGoogleSheets()">🔄</div>
             </div>
         </div>
         <div class="top-summary-grid">
@@ -126,6 +126,7 @@
         </div>
     </div>
 
+    <!-- 六大功能分頁鈕 -->
     <div class="nav-tab-container">
         <button class="nav-tab active" onclick="switchPage('page-my-ledger', event)">
             <div class="nav-tab-icon" style="color: var(--land-blue);">📋</div>
@@ -155,6 +156,7 @@
 
     <div class="content-box">
         
+        <!-- 分頁一：阿毛帳本 -->
         <div id="page-my-ledger" class="page active">
             <div class="main-card">
                 <span class="bank-tag tag-land">🏦 土地銀行</span>
@@ -173,6 +175,7 @@
             <div class="detail-list-wrapper" id="my-spend-list"></div>
         </div>
 
+        <!-- 分頁二：阿毛飼養員 -->
         <div id="page-bf-feed" class="page">
             <div class="main-card" style="background: #fffbfb; border: 1px solid #ffe3e7;">
                 <span class="bank-tag tag-cathay">🌳 國泰世華</span>
@@ -191,6 +194,7 @@
             <div class="detail-list-wrapper" id="bf-spend-list"></div>
         </div>
 
+        <!-- 分頁三：約會記帳 -->
         <div id="page-date-ledger" class="page">
             <div class="main-card">
                 <span class="bank-tag tag-post">📮 郵局存款</span>
@@ -209,6 +213,7 @@
             <div class="detail-list-wrapper" id="date-spend-list"></div>
         </div>
 
+        <!-- 分頁四：工地帳本 -->
         <div id="page-site-ledger" class="page">
             <div class="main-card">
                 <span class="bank-tag tag-site">👷 工地款項</span>
@@ -241,6 +246,7 @@
             <div class="detail-list-wrapper" id="site-spend-list"></div>
         </div>
 
+        <!-- 分頁五：存錢計畫 -->
         <div id="page-saving-plan" class="page">
             <div class="main-card">
                 <div class="card-mini-title">🐷 365天階梯存錢累計</div>
@@ -249,6 +255,7 @@
             </div>
         </div>
 
+        <!-- 分頁六：數據統計 -->
         <div id="page-charts" class="page">
             <div class="chart-box">
                 <div style="font-size:0.85rem; font-weight:bold; margin-bottom:10px;">📊 各帳本金流分配圖</div>
@@ -264,36 +271,30 @@
 </div>
 
 <script>
-// 初始化設定與資料庫安全讀取 (相容舊格式)
-let db = {};
-try {
-    let raw = localStorage.getItem('aurora_wallet_v22') || localStorage.getItem('aurora_wallet_v21') || localStorage.getItem('aurora_wallet');
-    db = JSON.parse(raw) || {};
-} catch(e) {
-    db = {};
-}
+// 核心設定：綁定您的 Google 試算表後端 GAS 網址
+const GOOGLE_GAS_URL = "https://script.google.com/macros/s/AKfycbyDWbRPZvKFjzeoSqO2Db3R1xDiomQ7P2Q-iS6gNmpJKtvWcIUzPnJc_vzjO1xLxYPD/exec";
 
-// 欄位安全初始化
-if(!db.my_salary) db.my_salary = [];
-if(!db.my_spend) db.my_spend = [];
-if(!db['bf-deposit'] && db.bf_deposit) db['bf-deposit'] = db.bf_deposit; // 自動橋接
-if(!db['bf-deposit']) db['bf-deposit'] = [];
-if(!db['bf-spend'] && db.bf_spend) db['bf-spend'] = db.bf_spend;
-if(!db['bf-spend']) db['bf-spend'] = [];
-if(!db.date_deposit) db.date_deposit = [];
-if(!db.date_spend) db.date_spend = [];
-if(!db.site_income) db.site_income = [];
-if(!db.site_spend) db.site_spend = [];
-if(!db.plan_checked) db.plan_checked = [];
+let db = {
+    my_salary: [], my_spend: [],
+    'bf-deposit': [], 'bf-spend': [],
+    date_deposit: [], date_spend: [],
+    site_income: [], site_spend: [],
+    plan_checked: []
+};
 
 let currentSitePaidStatus = true;
-const GITHUB_TOKEN = localStorage.getItem('aurora_g_token') || "";
-const GITHUB_GIST_ID = localStorage.getItem('aurora_g_gist') || "";
 
 window.onload = function() {
     initYearMonthSelects();
     initDates();
-    syncWithCloud(true);
+    // 優先讀取本地快取，加快開啟速度
+    let localData = localStorage.getItem('aurora_wallet_v22');
+    if(localData) {
+        try { db = Object.assign(db, JSON.parse(localData)); } catch(e){}
+    }
+    updateUI();
+    // 網頁開啟時自動與 Google 試算表做雲端同步
+    fetchDataFromGoogleSheets();
 };
 
 function initYearMonthSelects() {
@@ -317,7 +318,13 @@ function initYearMonthSelects() {
 }
 
 function initDates() {
-    const todayStr = new Date().toISOString().split('T')[0];
+    // 修正特定手機瀏覽器日期無法改動的問題：採用標準 YYYY-MM-DD
+    const localDate = new Date();
+    const yyyy = localDate.getFullYear();
+    const mm = String(localDate.getMonth() + 1).padStart(2, '0');
+    const dd = String(localDate.getDate()).padStart(2, '0');
+    const todayStr = `${yyyy}-${mm}-${dd}`;
+    
     if(document.getElementById('my-date')) document.getElementById('my-date').value = todayStr;
     if(document.getElementById('bf-date')) document.getElementById('bf-date').value = todayStr;
     if(document.getElementById('date-date')) document.getElementById('date-date').value = todayStr;
@@ -352,12 +359,6 @@ function toggleSitePaidStatus() {
     }
 }
 
-function saveDB() {
-    localStorage.setItem('aurora_wallet_v22', JSON.stringify(db));
-    updateUI();
-    syncWithCloud(false);
-}
-
 function updateUI() {
     const sy = document.getElementById('sel-year');
     const sm = document.getElementById('sel-month');
@@ -385,8 +386,8 @@ function updateUI() {
     renderList('my-spend-list', mSpend, 'my_spend');
 
     // 2. 阿毛飼養員
-    let bDep = filterByYM(db['bf-deposit']);
-    let bSpd = filterByYM(db['bf-spend']);
+    let bDep = filterByYM(db['bf-deposit'] || db.bf_deposit);
+    let bSpd = filterByYM(db['bf-spend'] || db.bf_spend);
     let bfBal = bDep.reduce((sum, i) => sum + (i.amount||0), 0) - bSpd.reduce((sum, i) => sum + (i.amount||0), 0);
     if(document.getElementById('bf-balance-display')) document.getElementById('bf-balance-display').innerText = "$ " + bfBal.toLocaleString();
     renderList('bf-deposit-list', bDep, 'bf-deposit');
@@ -409,7 +410,6 @@ function updateUI() {
     renderList('site-income-list', sInc, 'site_income');
     renderList('site-spend-list', sSpd, 'site_spend');
 
-    // 5. 存錢計畫與圖表
     renderSavingPlan();
     renderCharts(myBal, bfBal, dBal, siteBal, mSalary, mSpend, bDep, bSpd, dDep, dSpd, sInc, sSpd);
 }
@@ -445,17 +445,61 @@ function renderList(elementId, items, dbKey) {
     el.innerHTML = html;
 }
 
+// ================== 後端 Google 試算表同步函數 ==================
+function fetchDataFromGoogleSheets() {
+    const icon = document.getElementById('sync-icon');
+    if(icon) icon.classList.add('spinning');
+
+    fetch(`${GOOGLE_GAS_URL}?action=read`)
+    .then(res => res.json())
+    .then(data => {
+        if(data && typeof data === 'object') {
+            db = Object.assign(db, data);
+            localStorage.setItem('aurora_wallet_v22', JSON.stringify(db));
+            updateUI();
+        }
+    })
+    .catch(err => console.error("同步失敗:", err))
+    .finally(() => {
+        if(icon) icon.classList.remove('spinning');
+    });
+}
+
+function syncToGoogleSheets(actionType, dbKey, payload) {
+    const icon = document.getElementById('sync-icon');
+    if(icon) icon.classList.add('spinning');
+
+    fetch(GOOGLE_GAS_URL, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: actionType, key: dbKey, data: payload })
+    })
+    .then(() => {
+        // 異步刷新本地
+        localStorage.setItem('aurora_wallet_v22', JSON.stringify(db));
+        updateUI();
+    })
+    .catch(err => console.error("上傳失敗:", err))
+    .finally(() => {
+        setTimeout(() => { if(icon) icon.classList.remove('spinning'); }, 800);
+    });
+}
+
 function doMyAction(type) {
     let amtInput = document.getElementById('my-amount');
     let val = parseInt(amtInput.value);
     if(!val || val <= 0) return Swal.fire('提示', '請輸入大於0的金額！', 'warning');
     let date = document.getElementById('my-date').value;
     
-    let targetList = (type === 'salary') ? db.my_salary : db.my_spend;
-    targetList.push({ id: Date.now(), amount: val, date: date });
+    let dbKey = (type === 'salary') ? 'my_salary' : 'my_spend';
+    let newItem = { id: Date.now(), amount: val, date: date };
+    
+    db[dbKey].push(newItem);
     amtInput.value = '';
-    saveDB();
-    Swal.fire('記帳成功', '已記入阿毛帳本！', 'success');
+    
+    syncToGoogleSheets('insert', dbKey, newItem);
+    Swal.fire('記帳成功', '已自動同步至 Google 試算表！', 'success');
 }
 
 function doBfAction(type) {
@@ -464,11 +508,15 @@ function doBfAction(type) {
     if(!val || val <= 0) return Swal.fire('提示', '請輸入大於0的金額！', 'warning');
     let date = document.getElementById('bf-date').value;
     
-    let targetList = (type === 'deposit') ? db['bf-deposit'] : db['bf-spend'];
-    targetList.push({ id: Date.now(), amount: val, date: date });
+    let dbKey = (type === 'deposit') ? 'bf-deposit' : 'bf-spend';
+    let newItem = { id: Date.now(), amount: val, date: date };
+    
+    if(!db[dbKey]) db[dbKey] = [];
+    db[dbKey].push(newItem);
     amtInput.value = '';
-    saveDB();
-    Swal.fire('記帳成功', '已記入阿毛飼養員金庫！', 'success');
+    
+    syncToGoogleSheets('insert', dbKey, newItem);
+    Swal.fire('記帳成功', '已自動同步至 Google 試算表！', 'success');
 }
 
 function doDateAction(type) {
@@ -477,11 +525,14 @@ function doDateAction(type) {
     if(!val || val <= 0) return Swal.fire('提示', '請輸入大於0的金額！', 'warning');
     let date = document.getElementById('date-date').value;
     
-    let targetList = (type === 'deposit') ? db.date_deposit : db.date_spend;
-    targetList.push({ id: Date.now(), amount: val, date: date });
+    let dbKey = (type === 'deposit') ? 'date_deposit' : 'date_spend';
+    let newItem = { id: Date.now(), amount: val, date: date };
+    
+    db[dbKey].push(newItem);
     amtInput.value = '';
-    saveDB();
-    Swal.fire('記帳成功', '已記入約會公積金！', 'success');
+    
+    syncToGoogleSheets('insert', dbKey, newItem);
+    Swal.fire('記帳成功', '已自動同步至 Google 試算表！', 'success');
 }
 
 function doSiteAction(type) {
@@ -493,35 +544,28 @@ function doSiteAction(type) {
     let payer = document.getElementById('site-payer').value;
     let isPaid = currentSitePaidStatus;
     
-    let targetList = (type === 'income') ? db.site_income : db.site_spend;
-    targetList.push({ 
-        id: Date.now(), 
-        amount: val, 
-        date: date,
-        payer: payer,
-        isPaid: isPaid
-    });
+    let dbKey = (type === 'income') ? 'site_income' : 'site_spend';
+    let newItem = { id: Date.now(), amount: val, date: date, payer: payer, isPaid: isPaid };
     
+    db[dbKey].push(newItem);
     amtInput.value = '';
-    saveDB();
-    Swal.fire('記帳成功', `已記入工地帳本（付款人：${payer} / ${isPaid ? '已付款' : '未付款'}）`, 'success');
+    
+    syncToGoogleSheets('insert', dbKey, newItem);
+    Swal.fire('記帳成功', `已同步至工地試算表（付款人：${payer}）`, 'success');
 }
 
 function deleteItem(dbKey, id) {
     Swal.fire({
-        title: '要刪除這筆帳目嗎？',
-        text: "刪除後不可恢復！",
+        title: '要從雲端試算表刪除這筆帳目嗎？',
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#e74c3c',
         cancelButtonColor: '#7f8c8d',
-        confirmButtonText: '是的，刪除它！',
-        cancelButtonText: '取消'
+        confirmButtonText: '是的，刪除！'
     }).then((result) => {
         if (result.isConfirmed) {
             db[dbKey] = db[dbKey].filter(i => i.id !== id);
-            saveDB();
-            Swal.fire('已刪除', '該款項已消失在星空中。', 'success');
+            syncToGoogleSheets('delete', dbKey, { id: id });
         }
     });
 }
@@ -531,6 +575,7 @@ function renderSavingPlan() {
     if(!el) return;
     let html = '';
     let totalPlanAmt = 0;
+    if(!db.plan_checked) db.plan_checked = [];
     
     for(let i = 1; i <= 365; i++) {
         let isDone = db.plan_checked.includes(i);
@@ -552,12 +597,17 @@ function renderSavingPlan() {
 }
 
 function togglePlan(dayNum) {
-    if(db.plan_checked.includes(dayNum)) {
+    if(!db.plan_checked) db.plan_checked = [];
+    let isChecking = !db.plan_checked.includes(dayNum);
+    
+    if(!isChecking) {
         db.plan_checked = db.plan_checked.filter(d => d !== dayNum);
     } else {
         db.plan_checked.push(dayNum);
     }
-    saveDB();
+    
+    // 同步到 Google 試算表
+    syncToGoogleSheets('plan_toggle', 'plan_checked', { day: dayNum, checked: isChecking });
 }
 
 let myPieChart = null;
@@ -596,78 +646,6 @@ function renderCharts(myBal, bfBal, dBal, siteBal, mSalary, mSpend, bDep, bSpd, 
                 ]
             },
             options: { responsive: true, scales: { y: { beginAtZero: true } } }
-        });
-    }
-}
-
-function openSettingsMenu() {
-    Swal.fire({
-        title: '🌌 極光星空備份中心',
-        html: `
-            <input id="swal-token" type="text" class="swal2-input" placeholder="輸入 GitHub Token" value="${localStorage.getItem('aurora_g_token') || ''}">
-            <input id="swal-gist" type="text" class="swal2-input" placeholder="輸入 Gist ID" value="${localStorage.getItem('aurora_g_gist') || ''}">
-        `,
-        showCancelButton: true,
-        confirmButtonText: '保存並強制同步',
-        cancelButtonText: '取消',
-        preConfirm: () => {
-            return {
-                token: document.getElementById('swal-token').value,
-                gist: document.getElementById('swal-gist').value
-            }
-        }
-    }).then((result) => {
-        if (result.isConfirmed) {
-            localStorage.setItem('aurora_g_token', result.value.token);
-            localStorage.setItem('aurora_g_gist', result.value.gist);
-            Swal.fire('設置成功', '將開始為您連線雲端...', 'success');
-            syncWithCloud(true);
-        }
-    });
-}
-
-function syncWithCloud(isLoadForce) {
-    const t = localStorage.getItem('aurora_g_token');
-    const g = localStorage.getItem('aurora_g_gist');
-    if(!t || !g) { updateUI(); return; }
-
-    if(document.getElementById('loading')) document.getElementById('loading').style.display = 'flex';
-
-    if(isLoadForce) {
-        fetch(`https://api.github.com/gists/${g}`, {
-            headers: { 'Authorization': `token ${t}` }
-        })
-        .then(res => res.json())
-        .then(data => {
-            if(data.files && data.files['aurora_wallet.json']) {
-                let remoteData = JSON.parse(data.files['aurora_wallet.json'].content);
-                if (remoteData && typeof remoteData === 'object') {
-                    db = Object.assign(db, remoteData);
-                    localStorage.setItem('aurora_wallet_v22', JSON.stringify(db));
-                }
-            }
-            updateUI();
-            if(document.getElementById('loading')) document.getElementById('loading').style.display = 'none';
-        })
-        .catch(err => {
-            console.error(err);
-            updateUI();
-            if(document.getElementById('loading')) document.getElementById('loading').style.display = 'none';
-        });
-    } else {
-        let payload = {
-            description: "Aurora Wallet Backup",
-            files: { 'aurora_wallet.json': { content: JSON.stringify(db) } }
-        };
-        fetch(`https://api.github.com/gists/${g}`, {
-            method: 'PATCH',
-            headers: { 'Authorization': `token ${t}`, 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        })
-        .then(() => { if(document.getElementById('loading')) document.getElementById('loading').style.display = 'none'; })
-        .catch(err => {
-            console.error(err);
-            if(document.getElementById('loading')) document.getElementById('loading').style.display = 'none';
         });
     }
 }
