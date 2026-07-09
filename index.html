@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>我的存摺 V18.5 - 阿毛貓罐罐版</title>
+    <title>我的存摺 V18.6 - 雙軌名目版</title>
     <link rel="apple-touch-icon" href="image.png">
     <link rel="icon" href="image.png">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -172,7 +172,7 @@
             <div class="main-card" style="background: #fffbfb; border: 1px solid #ffe3e7; padding-top: 35px;">
                 <span class="bank-tag tag-cathay">🌳 國泰世華</span>
                 
-                <!-- 新增：頂級貓罐罐基金總額 -->
+                <!-- 頂級貓罐罐基金總額 -->
                 <div style="background: linear-gradient(135deg, #fff5f6, #fff0f2); border-radius: 12px; padding: 8px; margin-bottom: 15px; font-size: 0.85rem; font-weight: bold; color: #e0526c; border: 1px dashed #ffa6b5;">
                     🐾 阿毛的頂級貓罐罐基金：<span id="cat-can-total" style="font-size: 1.1rem; color: #ff4766;">$ 0</span>
                 </div>
@@ -269,9 +269,11 @@
         if(!data.dateSpendDetails) data.dateSpendDetails = [];
         if(typeof data.dateTotalSpend === 'undefined') data.dateTotalSpend = 0;
 
-        // 新增貓罐罐資料夾
         if(typeof data.catCanTotal === 'undefined') data.catCanTotal = 0;
         if(!data.catCanDetails) data.catCanDetails = [];
+        
+        // 新增：土銀詳細日常支出流水帳結構
+        if(!data.mySpendDetails) data.mySpendDetails = [];
         return data;
     }
     function getM() { return getMByArgs(sy.value, sm.value); }
@@ -298,6 +300,10 @@
             db.total = safeNum(db.total) - amt;
             mData.out += amt;
             mData.outDetails[cat] = safeNum(mData.outDetails[cat]) + amt;
+            
+            // 寫入詳細個人支出流水帳
+            if(!mData.mySpendDetails) mData.mySpendDetails = [];
+            mData.mySpendDetails.push({ amt: amt, cat: cat, date: new Date().toLocaleDateString() });
         } else if(type === 'force_save') {
             if(safeNum(db.total) < amt) return Swal.fire("土地銀行餘額不足", "沒錢充公啦大人！", "error");
             db.total = safeNum(db.total) - amt;
@@ -307,6 +313,20 @@
 
         amtInput.value = '';
         syncData('push');
+    }
+
+    // 💡 撤銷土銀日常支出的獨立邏輯
+    async function delMySpend(idx) {
+        const mData = getM();
+        const item = mData.mySpendDetails[idx];
+        const res = await Swal.fire({ title: '撤銷此筆土銀支出？', text: `[${item.cat}] $${safeNum(item.amt)}`, showCancelButton: true });
+        if(res.isConfirmed) {
+            db.total = safeNum(db.total) + safeNum(item.amt);
+            mData.out = safeNum(mData.out) - safeNum(item.amt);
+            mData.outDetails[item.cat] = safeNum(mData.outDetails[item.cat]) - safeNum(item.amt);
+            mData.mySpendDetails.splice(idx, 1);
+            syncData('push');
+        }
     }
 
     // 飼養員零用錢進貢
@@ -324,7 +344,7 @@
         syncData('push');
     }
 
-    // 爽花零用錢
+    // 爽花零用錢 (新增：支援名目選擇功能)
     async function doBfSpend() {
         const amtInput = document.getElementById('bf-amount');
         const amt = parseInt(amtInput.value);
@@ -335,20 +355,22 @@
             return Swal.fire("零用錢餘額不足", "零用錢花光啦！快喵喵叫提醒飼養員！", "error");
         }
 
-        const { value: note } = await Swal.fire({
-            title: '零用錢花去哪了？',
-            input: 'text',
-            inputPlaceholder: '例如：買包包、做美甲、吃下午茶...',
+        // 選擇花去哪的名目選單
+        const { value: cat } = await Swal.fire({
+            title: '零用錢花去哪了？(選擇名目)',
+            input: 'select',
+            inputOptions: db.categories.reduce((a,v)=>{a[v]=v;return a;},{}),
             showCancelButton: true
         });
-        if(note === null) return;
-        let finalNote = note.trim() || "快樂零用錢開銷";
+        if(!cat) return;
 
         mData.bfFundTotal = safeNum(mData.bfFundTotal) - amt;
-        mData.bfSpendDetails.push({ amt: amt, note: finalNote, date: new Date().toLocaleDateString() });
+        // 把選擇的名目儲存在 note 裡
+        mData.bfSpendDetails.push({ amt: amt, note: cat, date: new Date().toLocaleDateString() });
         
         mData.out += amt;
-        mData.outDetails["🛍️ 零用錢開銷"] = safeNum(mData.outDetails["🛍️ 零用錢開銷"]) + amt;
+        // 為了讓圖表更美觀，不再歸在一個總數，而是直接在圖表內合併顯示
+        mData.outDetails[`🎁 ${cat}`] = safeNum(mData.outDetails[`🎁 ${cat}`]) + amt;
 
         amtInput.value = '';
         syncData('push');
@@ -424,7 +446,7 @@
         let progress = goal > 0 ? Math.min(100, ((mData.saved / goal) * 100)) : 0;
         document.getElementById('plan-progress-percent').innerText = progress.toFixed(0) + '%';
 
-        // 渲染明細
+        // 渲染明細 1-1：領俸祿
         const salList = document.getElementById('my-salary-list'); salList.innerHTML = '';
         (mData.salaryDetails || []).forEach((v, i)=>{
             const d = document.createElement('div'); d.className='detail-item-row'; d.onclick=()=>delSalary(i);
@@ -432,15 +454,15 @@
             salList.appendChild(d);
         });
 
+        // 渲染明細 1-2：日常個人日常支出流水帳
         const exList = document.getElementById('my-spend-list'); exList.innerHTML = '';
-        const details = mData.outDetails || {};
-        for(let c in details) {
-            if(safeNum(details[c]) === 0 || c === "🛍️ 零用錢開銷" || c === "🌹 約會開銷") continue; 
-            const d = document.createElement('div'); d.className='detail-item-row'; d.onclick=()=>editOut(c);
-            d.innerHTML = `<span>🏷️ ${c}</span><span style="color:var(--out); font-weight:bold;">-$${safeNum(details[c]).toLocaleString()} ⚙️</span>`;
+        (mData.mySpendDetails || []).forEach((v, i)=>{
+            const d = document.createElement('div'); d.className='detail-item-row'; d.onclick=()=>delMySpend(i);
+            d.innerHTML = `<span>🏷️ [${v.cat}] (${v.date})</span><span style="color:var(--out); font-weight:bold;">-$${safeNum(v.amt).toLocaleString()} 🗑️</span>`;
             exList.appendChild(d);
-        }
+        });
 
+        // 🐱 貓罐罐
         const catList = document.getElementById('cat-can-save-list'); catList.innerHTML = '';
         (mData.catCanDetails || []).forEach((v, i)=>{
             const d = document.createElement('div'); d.className='detail-item-row'; d.onclick=()=>delCatCan(i);
@@ -448,6 +470,7 @@
             catList.appendChild(d);
         });
 
+        // 🐶 進貢紀錄
         const bfIncList = document.getElementById('bf-income-list'); bfIncList.innerHTML = '';
         (mData.bfIncomeDetails || []).forEach((v, i)=>{
             const d = document.createElement('div'); d.className='detail-item-row'; d.onclick=()=>delBfIncome(i);
@@ -455,13 +478,15 @@
             bfIncList.appendChild(d);
         });
 
+        // 🛍️ 零用錢名目消費紀錄
         const bfSpList = document.getElementById('bf-spend-list'); bfSpList.innerHTML = '';
         (mData.bfSpendDetails || []).forEach((v, i)=>{
             const d = document.createElement('div'); d.className='detail-item-row'; d.onclick=()=>delBfSpend(i);
-            d.innerHTML = `<span>🛍️ ${v.note} (${v.date})</span><span style="color:var(--out); font-weight:bold;">-$${safeNum(v.amt).toLocaleString()} 🗑️</span>`;
+            d.innerHTML = `<span>🎁 ${v.note} (${v.date})</span><span style="color:var(--out); font-weight:bold;">-$${safeNum(v.amt).toLocaleString()} 🗑️</span>`;
             bfSpList.appendChild(d);
         });
 
+        // 🌹 約會開銷
         const dtSpList = document.getElementById('date-spend-list'); dtSpList.innerHTML = '';
         (mData.dateSpendDetails || []).forEach((v, i)=>{
             const d = document.createElement('div'); d.className='detail-item-row'; d.onclick=()=>delDateSpend(i);
@@ -469,6 +494,7 @@
             dtSpList.appendChild(d);
         });
 
+        // 強制充公
         const svList = document.getElementById('my-saved-list'); svList.innerHTML = '';
         (mData.savedDetails || []).forEach((v, i)=>{
             const d = document.createElement('div'); d.className='detail-item-row'; d.onclick=()=>delIn(i);
@@ -492,6 +518,7 @@
         // 圓餅圖
         if(document.getElementById('page-charts').classList.contains('active')) {
             const ctx = document.getElementById('outPieChart'); if(outPieChart) outPieChart.destroy();
+            const details = mData.outDetails || {};
             const labs = Object.keys(details).filter(c => safeNum(details[c]) > 0); const dataVals = labs.map(c => safeNum(details[c]));
             outPieChart = new Chart(ctx, { 
                 type:'doughnut', 
@@ -540,22 +567,14 @@
     }
     async function delBfSpend(idx) {
         const mData = getM(); const item = mData.bfSpendDetails[idx];
-        const res = await Swal.fire({ title: '撤銷此筆國泰零用錢支出？', text: `$${safeNum(item.amt)}`, showCancelButton: true });
+        const res = await Swal.fire({ title: '撤銷此筆國泰零用錢支出？', text: `[${item.note}] $${safeNum(item.amt)}`, showCancelButton: true });
         if(res.isConfirmed) {
             mData.bfFundTotal = safeNum(mData.bfFundTotal) + safeNum(item.amt);
             mData.out = safeNum(mData.out) - safeNum(item.amt);
-            mData.outDetails["🛍️ 零用錢開銷"] = safeNum(mData.outDetails["🛍️ 零用錢開銷"]) - safeNum(item.amt);
+            mData.outDetails[`🎁 ${item.note}`] = safeNum(mData.outDetails[`🎁 ${item.note}`]) - safeNum(item.amt);
             mData.bfSpendDetails.splice(idx, 1); 
             syncData('push'); 
         }
-    }
-    async function editOut(cat) {
-        const mData = getM(); const amt = safeNum(mData.outDetails[cat]);
-        const { value: action } = await Swal.fire({ title: cat, text: `$${amt.toLocaleString()}`, showDenyButton: true, showCancelButton: true, confirmButtonText: '換名目', denyButtonText: '刪除紀錄' });
-        if(action) {
-            const { value: ncat } = await Swal.fire({ title: '換到哪？', input: 'select', inputOptions: db.categories.reduce((a,v)=>{a[v]=v;return a;},{}) });
-            if(ncat) { mData.outDetails[ncat] = safeNum(mData.outDetails[ncat]) + amt; delete mData.outDetails[cat]; syncData('push'); }
-        } else if(action === false) { db.total = safeNum(db.total) + amt; mData.out = safeNum(mData.out) - amt; delete mData.outDetails[cat]; syncData('push'); }
     }
     async function editMonthlyGoal(m) {
         let currentGoal = safeNum(db.monthlyGoal) || 5000; 
@@ -591,12 +610,24 @@
             if(mode==='push') await fetch(WEB_APP_URL, {method:'POST', body:JSON.stringify({data:db})});
             else { 
                 const r = await fetch(WEB_APP_URL); const j = await r.json(); 
-                if(j && typeof j.total !== 'undefined') { db = j; db.total = safeNum(db.total); if(!db.categories) db.categories = ["伙食","交通","娛樂","購物","核心其他"]; }
+                if(j && typeof j.total !== 'undefined') { db = j; db.total = safeNum(db.total); if(!db.categories) db.categories = ["伙食","交通","娛樂","購物","其他"]; }
             }
             updateUI();
         } catch(e) { console.error(e); }
         document.getElementById('loading').style.display='none';
     }
+
+    function switchPage(p) { 
+        document.querySelectorAll('.page').forEach(x=>x.classList.remove('active')); 
+        document.querySelectorAll('.nav-tab').forEach(x=>x.classList.remove('active')); 
+        document.getElementById(p).classList.add('active'); 
+        event.currentTarget.classList.add('active');
+        updateUI(); 
+    }
+    window.onload = () => syncData('pull');
+</script>
+</body>
+</html>
 
     function switchPage(p) { 
         document.querySelectorAll('.page').forEach(x=>x.classList.remove('active')); 
