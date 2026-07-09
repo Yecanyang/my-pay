@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>記帳小本本 V24.2.0</title>
+    <title>記帳小本本</title>
     <link rel="apple-touch-icon" href="image.png">
     <link rel="icon" href="image.png">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -180,13 +180,13 @@
         <div id="page-my-ledger" class="page active">
             <div class="main-card">
                 <span class="bank-tag tag-land">🏦 土地銀行</span>
-                <div class="card-mini-title">阿毛歷史總結餘</div>
+                <div class="card-mini-title">阿毛歷史總結餘 (持續滾存)</div>
                 <div class="card-big-amount" id="my-balance-display" style="color: var(--land-blue);">$ 0</div>
                 <input type="number" id="my-amount" placeholder="輸入金額..." inputmode="numeric" class="num-input">
                 <input type="date" id="my-date" class="date-picker-input">
                 <div class="action-btn-grid">
-                    <button class="action-btn btn-land" onclick="askForRemarkAndDo('my', 'salary')">🧧 領取精神賠償</button>
-                    <button class="action-btn btn-out" onclick="askForRemarkAndDo('my', 'spend')">💸 肆意噴錢</button>
+                    <button class="action-btn btn-land" onclick="askForRemarkAndDo('my', 'salary')">🧧 領取精神賠償金</button>
+                    <button class="action-btn btn-out" onclick="askForRemarkAndDo('my', 'spend')">💸 揮霍</button>
                 </div>
             </div>
             <div class="list-section-title">🧧 本月薪資明細 (土銀)</div>
@@ -198,7 +198,7 @@
         <div id="page-bf-feed" class="page">
             <div class="main-card" style="background: #fffbfb; border: 1px solid #ffe3e7;">
                 <span class="bank-tag tag-cathay">🌳 國泰世華</span>
-                <div class="card-mini-title">🐱 飼養員小金庫總餘額</div>
+                <div class="card-mini-title">🐱 飼養員小金庫總餘額 (持續滾存)</div>
                 <div class="card-big-amount" id="bf-balance-display" style="color: var(--bf-pink);">$ 0</div>
                 <input type="number" id="bf-amount" placeholder="輸入金額..." inputmode="numeric" class="num-input">
                 <input type="date" id="bf-date" class="date-picker-input">
@@ -258,7 +258,7 @@
                     <button class="action-btn btn-out" onclick="askForRemarkAndDo('site', 'spend')">🛠️ 零用金支出</button>
                 </div>
             </div>
-            <div class="list-section-title">🏗️ 零用金撥補紀錄</div>
+            <div class="list-section-title">🏗️ 零用金撥補</div>
             <div class="detail-list-wrapper" id="site-income-list"></div>
             <div class="list-section-title">🛠️ 零用金支出明細</div>
             <div class="detail-list-wrapper" id="site-spend-list"></div>
@@ -302,8 +302,7 @@
 let db = {
     my_salary: [], my_spend: [],
     'bf-deposit': [], 'bf-spend': [],
-    bf_deposit: [], bf_spend: [],
-    date_deposit: [], date_spend: [],
+    date_spend: [],
     site_income: [], site_spend: [],
     plan_checked: []
 };
@@ -314,12 +313,10 @@ window.onload = function() {
     initYearMonthSelects();
     initDates();
     
-    // 兼容舊版快取
-    let localData = localStorage.getItem('aurora_wallet_v24') || localStorage.getItem('aurora_wallet_v22');
+    let localData = localStorage.getItem('aurora_wallet_v24');
     if(localData) { try { db = Object.assign(db, JSON.parse(localData)); } catch(e){} }
     updateUI();
     
-    // 開啟時嘗試自動同步
     let savedUrl = localStorage.getItem('aurora_gas_url');
     if(savedUrl) { fetchDataFromGoogleSheets(); }
 };
@@ -393,10 +390,6 @@ function updateUI() {
 
     const sumAll = (list) => Array.isArray(list) ? list.reduce((sum, i) => sum + (i.amount || 0), 0) : 0;
 
-    // 整合橫線和底線的相容性
-    let bfDepositList = (db['bf-deposit'] && db['bf-deposit'].length) ? db['bf-deposit'] : (db.bf_deposit || []);
-    let bfSpendList = (db['bf-spend'] && db['bf-spend'].length) ? db['bf-spend'] : (db.bf_spend || []);
-
     // 1. 阿毛帳本
     let myAllSalary = sumAll(db.my_salary);
     let myAllSpend = sumAll(db.my_spend);
@@ -407,16 +400,16 @@ function updateUI() {
     renderList('my-spend-list', filterByYM(db.my_spend), 'my_spend');
 
     // 2. 阿毛飼養員
-    let bfAllDep = sumAll(bfDepositList);
-    let bfAllSpd = sumAll(bfSpendList);
+    let bfAllDep = sumAll(db['bf-deposit'] || []);
+    let bfAllSpd = sumAll(db['bf-spend'] || []);
     let bfBal = bfAllDep - bfAllSpd;
     document.getElementById('bf-balance-display').innerText = "$ " + bfBal.toLocaleString();
     document.getElementById('top-bf-balance').innerText = "$ " + bfBal.toLocaleString();
-    renderList('bf-deposit-list', filterByYM(bfDepositList), 'bf-deposit');
-    renderList('bf-spend-list', filterByYM(bfSpendList), 'bf-spend');
+    renderList('bf-deposit-list', filterByYM(db['bf-deposit'] || []), 'bf-deposit');
+    renderList('bf-spend-list', filterByYM(db['bf-spend'] || []), 'bf-spend');
 
     // 3. 約會帳本
-    let dSpd = filterByYM(db.date_spend);
+    let dSpd = filterByYM(db.date_spend || []);
     let dBal = dSpd.reduce((sum, i) => sum + Math.abs(i.amount||0), 0);
     document.getElementById('date-balance-display').innerText = "$ " + dBal.toLocaleString();
     document.getElementById('top-date-balance').innerText = "$ " + dBal.toLocaleString();
@@ -437,7 +430,7 @@ function updateUI() {
     if(currentChartTab === 'my') {
         currentSalary = filterByYM(db.my_salary); currentSpend = filterByYM(db.my_spend); titlePrefix = '👤 阿毛帳本';
     } else if(currentChartTab === 'bf') {
-        currentSalary = filterByYM(bfDepositList); currentSpend = filterByYM(bfSpendList); titlePrefix = '🐱 飼養員';
+        currentSalary = filterByYM(db['bf-deposit'] || []); currentSpend = filterByYM(db['bf-spend'] || []); titlePrefix = '🐱 飼養員';
     } else if(currentChartTab === 'date') {
         currentSalary = []; currentSpend = dSpd; titlePrefix = '🌹 約會支出';
     } else if(currentChartTab === 'site') {
@@ -466,17 +459,12 @@ function renderList(elementId, items, dbKey) {
 function fetchDataFromGoogleSheets() {
     let gasUrl = localStorage.getItem('aurora_gas_url');
     if(!gasUrl) return;
-    
     const icon = document.getElementById('sync-icon');
     if(icon) icon.style.opacity = '0.4';
     
     fetch(`${gasUrl}?action=read`)
         .then(res => res.json())
         .then(data => { 
-            // 同時保存到兩個兼容欄位，防止不見
-            if (data.bf_deposit) data['bf-deposit'] = data.bf_deposit;
-            if (data.bf_spend) data['bf-spend'] = data.bf_spend;
-            
             db = Object.assign(db, data); 
             localStorage.setItem('aurora_wallet_v24', JSON.stringify(db)); 
             updateUI(); 
@@ -491,7 +479,6 @@ function fetchDataFromGoogleSheets() {
 function syncToGoogleSheets(actionType, dbKey, payload) {
     localStorage.setItem('aurora_wallet_v24', JSON.stringify(db)); 
     updateUI();
-    
     let gasUrl = localStorage.getItem('aurora_gas_url');
     if(!gasUrl) return;
 
@@ -527,7 +514,6 @@ function executeLedgerAction(page, type, val, date, remark) {
         let dbKey = (type === 'deposit') ? 'bf-deposit' : 'bf-spend';
         let newItem = { id: Date.now(), amount: absVal, date: date, remark: remark };
         db[dbKey].push(newItem);
-        db[dbKey.replace('-', '_')].push(newItem); // 雙向寫入兼容
         syncToGoogleSheets('insert', dbKey, newItem);
     } else if (page === 'site') {
         let dbKey = (type === 'income') ? 'site_income' : 'site_spend';
@@ -537,13 +523,16 @@ function executeLedgerAction(page, type, val, date, remark) {
     } else if (page === 'date') {
         let deductSource = document.getElementById('date-deduct-source').value;
         let sharedId = Date.now();
+        
+        // 1. 寫入約會帳本
         let newItem = { id: sharedId, amount: absVal, date: date, remark: remark, source: deductSource };
         db['date_spend'].push(newItem);
         syncToGoogleSheets('insert', 'date_spend', newItem);
+        
+        // 2. 嚴謹連動寫入：只對應發送一次給目標帳本，不再重複雙寫
         let linkedKey = (deductSource === 'my') ? 'my_spend' : 'bf-spend';
         let linkedItem = { id: sharedId, amount: absVal, date: date, remark: `[約會支出] ${remark}`, isDateLink: true };
         db[linkedKey].push(linkedItem);
-        db[linkedKey.replace('-', '_')].push(linkedItem);
         syncToGoogleSheets('insert', linkedKey, linkedItem);
     }
 }
@@ -556,12 +545,10 @@ function deleteItem(dbKey, id) {
                 if(target){
                     let linkedKey = (target.source === 'my') ? 'my_spend' : 'bf-spend';
                     db[linkedKey] = db[linkedKey].filter(i => i.id !== id);
-                    db[linkedKey.replace('-', '_')] = db[linkedKey.replace('-', '_')].filter(i => i.id !== id);
                     syncToGoogleSheets('delete', linkedKey, { id: id });
                 }
             }
             db[dbKey] = db[dbKey].filter(i => i.id !== id);
-            if(dbKey.includes('-')) db[dbKey.replace('-', '_')] = db[dbKey.replace('-', '_')].filter(i => i.id !== id);
             syncToGoogleSheets('delete', dbKey, { id: id });
         }
     });
