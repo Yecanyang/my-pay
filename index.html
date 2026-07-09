@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>我的存摺 V17.0 - 三大銀行金庫專版</title>
+    <title>我的存摺 V18.0 - 星空粉藍撞色版</title>
     <link rel="apple-touch-icon" href="image.png">
     <link rel="icon" href="image.png">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -11,28 +11,38 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root { 
-            --navy: #0f264c; --bg: #f7f5eb; --card-bg: #ffffff; 
-            --text-dark: #333333; --gold: #c5a880; --green: #6d8764; --out: #b35656;
-            --post-green: #2d8a4e;
+            --dark-bg: #121212; /* 曜石極夜黑 */
+            --bg: #f4f6f9; 
+            --card-bg: #ffffff; 
+            --text-dark: #2c3e50;
+            
+            --land-blue: #0052cc; /* 皇家克萊因藍 */
+            --bf-pink: #ff8da1;  /* 櫻花初戀粉 */
+            --date-blue: #38b6ff; /* 晴空湖水藍 */
+            
+            --green: #2ecc71; 
+            --out: #e74c3c;
+            --gold: #f39c12;
         }
         body { font-family: -apple-system, sans-serif; background: var(--bg); margin: 0; padding: 0; display: flex; justify-content: center; color: var(--text-dark); }
         
-        /* 頂部深藍色區塊 */
+        /* 頂部極夜黑區塊 */
         .app-container { width: 100%; max-width: 412px; min-height: 100vh; background: var(--bg); position: relative; box-sizing: border-box; padding-bottom: 30px; }
-        .top-header { background: var(--navy); color: white; padding: 30px 20px 40px 20px; border-bottom-left-radius: 30px; border-bottom-right-radius: 30px; text-align: left; }
+        .top-header { background: var(--dark-bg); color: white; padding: 30px 20px 40px 20px; border-bottom-left-radius: 30px; border-bottom-right-radius: 30px; text-align: left; box-shadow: 0 4px 20px rgba(0,0,0,0.15); }
         .header-title-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .header-title { font-size: 1.5rem; font-weight: bold; color: #ebdcb9; letter-spacing: 1px; }
+        .header-title { font-size: 1.5rem; font-weight: bold; color: #ffffff; letter-spacing: 1px; }
         .top-summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        .summary-item { font-size: 0.8rem; color: #a1b2cd; display: flex; align-items: center; gap: 3px; }
-        .summary-val { font-size: 1.2rem; font-weight: bold; color: #ffffff; margin-top: 4px; }
-        .summary-val.gold-text { color: #ebdcb9; }
+        .summary-item { font-size: 0.8rem; color: #888888; display: flex; align-items: center; gap: 3px; }
+        .summary-val { font-size: 1.2rem; font-weight: bold; margin-top: 4px; }
+        .summary-val.blue-text { color: var(--date-blue); }
+        .summary-val.pink-text { color: var(--bf-pink); }
 
-        /* 五大核心功能鈕 (調整寬度以容納約會功能) */
+        /* 五大功能分頁鈕 */
         .nav-tab-container { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; margin: -20px 10px 15px 10px; }
         .nav-tab { background: var(--card-bg); border-radius: 12px; padding: 10px 2px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.05); cursor: pointer; transition: all 0.2s; border: none; }
-        .nav-tab.active { background: var(--navy); color: white; }
+        .nav-tab.active { background: var(--dark-bg); color: white; }
         .nav-tab-icon { font-size: 1.2rem; margin-bottom: 4px; }
-        .nav-tab-text { font-size: 0.7rem; font-weight: bold; }
+        .nav-tab-text { font-size: 0.7rem; font-weight: bold; color: #7f8c8d; }
         .nav-tab.active .nav-tab-text { color: white; }
 
         /* 主要內容卡片 */
@@ -40,53 +50,56 @@
         .page { display: none; }
         .page.active { display: block; }
         
-        .main-card { background: var(--card-bg); border-radius: 20px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); margin-bottom: 15px; text-align: center; position: relative; }
-        .card-mini-title { font-size: 0.8rem; color: #888; margin-bottom: 5px; display: flex; align-items: center; justify-content: center; gap: 4px; }
-        .card-big-amount { font-size: 2.2rem; font-weight: bold; color: var(--navy); margin-bottom: 15px; }
+        .main-card { background: var(--card-bg); border-radius: 20px; padding: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.03); margin-bottom: 15px; text-align: center; position: relative; border: 1px solid rgba(0,0,0,0.03); }
+        .card-mini-title { font-size: 0.8rem; color: #7f8c8d; margin-bottom: 5px; display: flex; align-items: center; justify-content: center; gap: 4px; }
+        .card-big-amount { font-size: 2.2rem; font-weight: bold; margin-bottom: 15px; }
         
-        /* 銀行小標籤 */
-        .bank-tag { position: absolute; top: 12px; right: 15px; font-size: 0.7rem; padding: 3px 8px; border-radius: 20px; font-weight: bold; }
-        .tag-land { background: #e6f2ff; color: #0066cc; }
-        .tag-cathay { background: #e6f7ed; color: #2d8a4e; }
-        .tag-post { background: #fdf2f2; color: #c0392b; }
+        /* 銀行專屬標籤顏色 */
+        .bank-tag { position: absolute; top: 12px; right: 15px; font-size: 0.7rem; padding: 4px 10px; border-radius: 20px; font-weight: bold; color: white; }
+        .tag-land { background: var(--land-blue); }
+        .tag-cathay { background: var(--bf-pink); }
+        .tag-post { background: var(--date-blue); }
 
         /* 輸入與按鈕樣式 */
-        .num-input { width: 100%; padding: 15px; border-radius: 15px; border: 2px solid #eee; box-sizing: border-box; margin-bottom: 12px; font-size: 1.4rem; text-align: center; outline: none; background: #fafafa; }
+        .num-input { width: 100%; padding: 15px; border-radius: 15px; border: 2px solid #eef2f5; box-sizing: border-box; margin-bottom: 12px; font-size: 1.4rem; text-align: center; outline: none; background: #fafafa; color: var(--dark-bg); font-weight: bold; }
         .action-btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .action-btn { border: none; padding: 14px; border-radius: 15px; font-weight: bold; color: white; cursor: pointer; font-size: 0.95rem; display: flex; align-items: center; justify-content: center; gap: 5px; }
-        .btn-green { background: var(--green); }
+        .action-btn { border: none; padding: 14px; border-radius: 15px; font-weight: bold; color: white; cursor: pointer; font-size: 0.95rem; display: flex; align-items: center; justify-content: center; gap: 5px; transition: opacity 0.2s; }
+        .action-btn:active { opacity: 0.8; }
+        
+        .btn-land { background: var(--land-blue); }
         .btn-out { background: var(--out); }
-        .btn-gold { background: #dca757; color: #fff; }
-        .btn-navy-action { background: var(--navy); }
-        .btn-post { background: var(--post-green); }
+        .btn-pink { background: var(--bf-pink); }
+        .btn-date { background: var(--date-blue); }
+        .btn-save { background: var(--green); }
         .btn-span-2 { grid-column: span 2; }
 
         /* 明細清單樣式 */
-        .list-section-title { text-align: left; font-size: 0.85rem; font-weight: bold; color: #666; margin: 15px 0 8px 5px; display: flex; justify-content: space-between; }
-        .detail-list-wrapper { text-align: left; max-height: 180px; overflow-y: auto; background: var(--card-bg); border-radius: 18px; padding: 5px; box-shadow: 0 2px 10px rgba(0,0,0,0.02); }
-        .detail-item-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 15px; border-bottom: 1px solid #f5f5f5; font-size: 0.9rem; cursor: pointer; }
+        .list-section-title { text-align: left; font-size: 0.85rem; font-weight: bold; color: #7f8c8d; margin: 15px 0 8px 5px; display: flex; justify-content: space-between; }
+        .detail-list-wrapper { text-align: left; max-height: 180px; overflow-y: auto; background: var(--card-bg); border-radius: 18px; padding: 5px; box-shadow: 0 4px 15px rgba(0,0,0,0.02); border: 1px solid rgba(0,0,0,0.02); }
+        .detail-item-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 15px; border-bottom: 1px solid #f8fafc; font-size: 0.9rem; cursor: pointer; }
         .detail-item-row:last-child { border-bottom: none; }
         
         /* 充公計畫網格樣式 */
         .plan-scroll-box { max-height: 380px; overflow-y: auto; padding-right: 2px; }
-        .plan-month-card { display: flex; justify-content: space-between; align-items: center; background: var(--card-bg); padding: 15px; border-radius: 15px; margin-bottom: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.02); cursor: pointer; }
+        .plan-month-card { display: flex; justify-content: space-between; align-items: center; background: var(--card-bg); padding: 15px; border-radius: 15px; margin-bottom: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.02); cursor: pointer; border-left: 4px solid var(--land-blue); }
         .plan-month-label { font-weight: bold; font-size: 0.95rem; }
         
         /* 齒輪與選單 */
-        .settings-gear { cursor: pointer; font-size: 1.2rem; opacity: 0.8; padding: 5px; }
+        .settings-gear { cursor: pointer; font-size: 1.2rem; opacity: 0.7; padding: 5px; transition: transform 0.2s; }
+        .settings-gear:hover { transform: rotate(45deg); opacity: 1; }
         .dropdown-selects { display: flex; gap: 5px; }
-        .dropdown-selects select { border: 1px solid rgba(255,255,255,0.2); padding: 5px 8px; border-radius: 8px; background: rgba(255,255,255,0.1); color: white; outline: none; font-size: 0.8rem; }
+        .dropdown-selects select { border: 1px solid rgba(255,255,255,0.15); padding: 5px 8px; border-radius: 8px; background: rgba(255,255,255,0.08); color: white; outline: none; font-size: 0.8rem; }
         .dropdown-selects select option { color: black; }
         
-        .loading-mask { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.85); display: none; align-items: center; justify-content: center; z-index: 10000; font-weight: bold; color: var(--navy); }
+        .loading-mask { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(18,18,18,0.8); display: none; align-items: center; justify-content: center; z-index: 10000; font-weight: bold; color: white; font-size: 1.1rem; }
     </style>
 </head>
 <body>
 
-<div id="loading" class="loading-mask">🐾 正在開啟皇家地下金庫...</div>
+<div id="loading" class="loading-mask">🌌 正在同步極光星空金庫...</div>
 
 <div class="app-container">
-    <!-- 頂部深藍色面版 -->
+    <!-- 頂部極夜黑面板 -->
     <div class="top-header">
         <div class="header-title-bar">
             <div class="header-title">我們的存摺</div>
@@ -98,98 +111,100 @@
         </div>
         <div class="top-summary-grid">
             <div>
-                <div class="summary-item">🏦 土地銀行 (大人)</div>
-                <div class="summary-val" id="top-my-balance">$ 0</div>
+                <div class="summary-item">🏦 土地銀行 (大人藍)</div>
+                <div class="summary-val blue-text" id="top-my-balance" style="color: var(--date-blue);">$ 0</div>
             </div>
             <div>
-                <div class="summary-item">🌳 國泰世華 (飼養)</div>
-                <div class="summary-val gold-text" id="top-bf-fund">$ 0</div>
+                <div class="summary-item">🌳 國泰世華 (男友粉)</div>
+                <div class="summary-val pink-text" id="top-bf-fund">$ 0</div>
             </div>
         </div>
     </div>
 
-    <!-- 五大核心功能分頁鈕 -->
+    <!-- 五大功能分頁鈕 -->
     <div class="nav-tab-container">
         <button class="nav-tab active" onclick="switchPage('page-my-ledger')">
-            <div class="nav-tab-icon">📋</div>
+            <div class="nav-tab-icon" style="color: var(--land-blue);">📋</div>
             <div class="nav-tab-text">我的帳本</div>
         </button>
+        <button class="nav-tab" onclick="switchPage('page-bf-feed')">
+            <div class="nav-tab-icon" style="color: var(--bf-pink);">🎁</div>
+            <div class="nav-tab-text">男友零用錢</div>
+        </button>
         <button class="nav-tab" onclick="switchPage('page-date-ledger')">
-            <div class="nav-tab-icon">🌹</div>
+            <div class="nav-tab-icon" style="color: var(--date-blue);">🌹</div>
             <div class="nav-tab-text">約會記帳</div>
         </button>
-        <button class="nav-tab" onclick="switchPage('page-bf-feed')">
-            <div class="nav-tab-icon">🐾</div>
-            <div class="nav-tab-text">飼養經費</div>
-        </button>
         <button class="nav-tab" onclick="switchPage('page-saving-plan')">
-            <div class="nav-tab-icon">🐷</div>
+            <div class="nav-tab-icon" style="color: var(--green);">🐷</div>
             <div class="nav-tab-text">存錢計畫</div>
         </button>
         <button class="nav-tab" onclick="switchPage('page-charts')">
-            <div class="nav-tab-icon">📊</div>
+            <div class="nav-tab-icon" style="color: var(--gold);">📊</div>
             <div class="nav-tab-text">數據統計</div>
         </button>
     </div>
 
     <div class="content-box">
         
-        <!-- 分頁一：我的帳本 (土地銀行) -->
+        <!-- 分頁一：我的帳本 (土地銀行 - 克萊因藍) -->
         <div id="page-my-ledger" class="page active">
             <div class="main-card">
                 <span class="bank-tag tag-land">🏦 土地銀行</span>
                 <div class="card-mini-title" id="ledger-month-title">本月大人可用結餘</div>
-                <div class="card-big-amount" id="my-balance-display">$ 0</div>
+                <div class="card-big-amount" id="my-balance-display" style="color: var(--land-blue);">$ 0</div>
                 <input type="number" id="my-amount" placeholder="輸入金額..." inputmode="numeric" class="num-input">
                 <div class="action-btn-grid">
-                    <button class="action-btn btn-green btn-span-2" onclick="doMyAction('salary')">🧧 領取俸祿 (入土銀)</button>
-                    <button class="action-btn btn-out" onclick="doMyAction('spend')">💸 肆意噴錢 (土銀出)</button>
-                    <button class="action-btn btn-gold" onclick="doMyAction('to_bf')">🥩 注入飼養經費 (往國泰)</button>
+                    <button class="action-btn btn-land btn-span-2" onclick="doMyAction('salary')">🧧 領取本職俸祿 (入土銀)</button>
+                    <button class="action-btn btn-out btn-span-2" onclick="doMyAction('spend')">💸 肆意噴錢 (土銀日常出帳)</button>
                 </div>
             </div>
             <div class="list-section-title">🧧 本月俸祿明細 (土銀)</div>
             <div class="detail-list-wrapper" id="my-salary-list"></div>
-            <div class="list-section-title">💸 本月個人支出明細 (土銀)</div>
+            <div class="list-section-title">💸 本月個人日常支出明細 (土銀)</div>
             <div class="detail-list-wrapper" id="my-spend-list"></div>
         </div>
 
-        <!-- 分頁二：約會記帳 (郵局) -->
+        <!-- 分頁二：男友零用錢 (國泰世華 - 櫻花初戀粉) -->
+        <div id="page-bf-feed" class="page">
+            <div class="main-card" style="background: #fffbfb; border: 1px solid #ffe3e7;">
+                <span class="bank-tag tag-cathay">🌳 國泰世華</span>
+                <div class="card-mini-title" style="color: #c95d70;">🎁 当當前男友進貢零用錢餘額</div>
+                <div class="card-big-amount" id="bf-fund-display" style="color: var(--bf-pink);">$ 0</div>
+                <input type="number" id="bf-amount" placeholder="輸入金額..." inputmode="numeric" class="num-input">
+                <div class="action-btn-grid">
+                    <button class="action-btn btn-pink" onclick="doBfIncome()">💰 男友進貢零用錢 (入國泰)</button>
+                    <button class="action-btn btn-out" onclick="doBfSpend()">🛍️ 爽花零用錢 (國泰出帳)</button>
+                </div>
+            </div>
+            <div class="list-section-title">🎁 本月零用錢進貢紀錄 (國泰)</div>
+            <div class="detail-list-wrapper" id="bf-income-list"></div>
+            <div class="list-section-title">🛍️ 本月零用錢消費明細 (國泰)</div>
+            <div class="detail-list-wrapper" id="bf-spend-list"></div>
+        </div>
+
+        <!-- 分頁三：約會記帳 (郵局 - 晴空湖水藍) -->
         <div id="page-date-ledger" class="page">
-            <div class="main-card" style="background: #f2f9f5; border: 1px solid #c2e0d1;">
-                <span class="bank-tag tag-post" style="background: #e1f5fe; color: #0288d1;">📮 中華郵局</span>
-                <div class="card-mini-title" style="color: var(--post-green);">🌹 本月甜蜜約會總開銷</div>
-                <div class="card-big-amount" id="date-spend-display" style="color: var(--post-green);">$ 0</div>
+            <div class="main-card" style="background: #f7fcff; border: 1px solid #d4efff;">
+                <span class="bank-tag tag-post">📮 中華郵局</span>
+                <div class="card-mini-title" style="color: #1a8ccb;">🌹 本月甜蜜約會總開銷</div>
+                <div class="card-big-amount" id="date-spend-display" style="color: var(--date-blue);">$ 0</div>
                 <input type="number" id="date-amount" placeholder="輸入約會金額..." inputmode="numeric" class="num-input">
                 <div class="action-btn-grid" style="grid-template-columns: 1fr;">
-                    <button class="action-btn btn-post" onclick="doDateSpend()">🌹 紀錄約會支出 (郵局出)</button>
+                    <button class="action-btn btn-date" onclick="doDateSpend()">🌹 紀錄約會支出 (郵局出)</button>
                 </div>
             </div>
             <div class="list-section-title">🌹 本月約會開銷明細 (郵局)</div>
             <div class="detail-list-wrapper" id="date-spend-list"></div>
         </div>
 
-        <!-- 分頁三：男友飼養經費 (國泰世華) -->
-        <div id="page-bf-feed" class="page">
-            <div class="main-card" style="background: #fffdf7; border: 1px solid #ebdcb9;">
-                <span class="bank-tag tag-cathay">🌳 國泰世華</span>
-                <div class="card-mini-title" style="color: #a38253;">🐾 當前男友飼養總經費</div>
-                <div class="card-big-amount" id="bf-fund-display" style="color: #8c6b3e;">$ 0</div>
-                <input type="number" id="bf-amount" placeholder="輸入撥款金額..." inputmode="numeric" class="num-input">
-                <div class="action-btn-grid" style="grid-template-columns: 1fr;">
-                    <button class="action-btn btn-navy-action" onclick="doBfSpend()">🥩 撥款飼料費支出 (國泰出)</button>
-                </div>
-            </div>
-            <div class="list-section-title">🐾 本月飼料費扣款明細 (國泰)</div>
-            <div class="detail-list-wrapper" id="bf-spend-list"></div>
-        </div>
-
         <!-- 分頁四：存錢計畫 -->
         <div id="page-saving-plan" class="page">
             <div class="main-card">
                 <div class="card-mini-title">本月強制充公目標進度</div>
-                <div class="card-big-amount" id="plan-progress-percent">0%</div>
+                <div class="card-big-amount" id="plan-progress-percent" style="color: var(--green);">0%</div>
                 <div class="action-btn-grid" style="grid-template-columns: 1fr;">
-                    <button class="action-btn btn-green" onclick="doMyAction('force_save')">📜 執行強制充公</button>
+                    <button class="action-btn btn-save" onclick="doMyAction('force_save')">📜 執行強制充公 (從土銀扣)</button>
                 </div>
             </div>
             <div class="list-section-title">📅 <span id="plan-year-label">2026</span> 年度充公計畫表</div>
@@ -238,8 +253,8 @@
         
         if(typeof data.bfFundTotal === 'undefined') data.bfFundTotal = 0; 
         if(!data.bfSpendDetails) data.bfSpendDetails = [];
+        if(!data.bfIncomeDetails) data.bfIncomeDetails = []; 
         
-        // 新增約會明細欄位
         if(!data.dateSpendDetails) data.dateSpendDetails = [];
         if(typeof data.dateTotalSpend === 'undefined') data.dateTotalSpend = 0;
         return data;
@@ -273,18 +288,58 @@
             db.total = safeNum(db.total) - amt;
             mData.saved += amt;
             mData.savedDetails.push({amt: amt, date: new Date().toLocaleDateString()});
-        } else if(type === 'to_bf') {
-            if(safeNum(db.total) < amt) return Swal.fire("土地銀行餘額不足", "無法提撥經費到國泰世華！", "error");
-            db.total = safeNum(db.total) - amt;
-            mData.bfFundTotal = safeNum(mData.bfFundTotal) + amt;
-            Swal.fire("提撥成功", `已從土地銀行轉入 $${amt} 至國泰世華飼養經費！`, "success");
         }
 
         amtInput.value = '';
         syncData('push');
     }
 
-    // 約會記帳 (郵局) 控制邏輯
+    // 男友零用錢進貢
+    async function doBfIncome() {
+        const amtInput = document.getElementById('bf-amount');
+        const amt = parseInt(amtInput.value);
+        if(!amt || amt <= 0) return Swal.fire("請輸入進貢金額", "", "warning");
+        const mData = getM();
+
+        mData.bfFundTotal = safeNum(mData.bfFundTotal) + amt;
+        mData.bfIncomeDetails.push({ amt: amt, date: new Date().toLocaleDateString() });
+        
+        Swal.fire("領取成功", `已成功存入零用錢 $${amt} 至國泰世華金庫！`, "success");
+        amtInput.value = '';
+        syncData('push');
+    }
+
+    // 爽花男友零用錢
+    async function doBfSpend() {
+        const amtInput = document.getElementById('bf-amount');
+        const amt = parseInt(amtInput.value);
+        if(!amt || amt <= 0) return Swal.fire("請輸入消費金額", "", "warning");
+        const mData = getM();
+
+        if(safeNum(mData.bfFundTotal) < amt) {
+            return Swal.fire("國泰世華餘額不足", "零用錢花光啦！快催促男友進貢！", "error");
+        }
+
+        const { value: note } = await Swal.fire({
+            title: '零用錢花去哪了？ (國泰出帳)',
+            input: 'text',
+            inputPlaceholder: '例如：買包包、做美甲、吃下午茶...',
+            showCancelButton: true
+        });
+        if(note === null) return;
+        let finalNote = note.trim() || "快樂零用錢開銷";
+
+        mData.bfFundTotal = safeNum(mData.bfFundTotal) - amt;
+        mData.bfSpendDetails.push({ amt: amt, note: finalNote, date: new Date().toLocaleDateString() });
+        
+        mData.out += amt;
+        mData.outDetails["🛍️ 零用錢開銷"] = safeNum(mData.outDetails["🛍️ 零用錢開銷"]) + amt;
+
+        amtInput.value = '';
+        syncData('push');
+    }
+
+    // 約會記帳 (郵局)
     async function doDateSpend() {
         const amtInput = document.getElementById('date-amount');
         const amt = parseInt(amtInput.value);
@@ -303,39 +358,8 @@
         mData.dateTotalSpend = safeNum(mData.dateTotalSpend) + amt;
         mData.dateSpendDetails.push({ amt: amt, note: finalNote, date: new Date().toLocaleDateString() });
         
-        // 併入總圖表分析
         mData.out += amt;
         mData.outDetails["🌹 約會開銷"] = safeNum(mData.outDetails["🌹 約會開銷"]) + amt;
-
-        amtInput.value = '';
-        syncData('push');
-    }
-
-    // 男友飼料費 (國泰世華) 扣款邏輯
-    async function doBfSpend() {
-        const amtInput = document.getElementById('bf-amount');
-        const amt = parseInt(amtInput.value);
-        if(!amt || amt <= 0) return Swal.fire("請輸入撥款金額", "", "warning");
-        const mData = getM();
-
-        if(safeNum(mData.bfFundTotal) < amt) {
-            return Swal.fire("國泰世華經費枯竭", "請先去「我的帳本」點擊「注入飼養經費」餵飽池子！", "error");
-        }
-
-        const { value: note } = await Swal.fire({
-            title: '飼料費名目 (國泰出帳)',
-            input: 'text',
-            inputPlaceholder: '例如：餵食火鍋、置裝費、零食點心...',
-            showCancelButton: true
-        });
-        if(note === null) return;
-        let finalNote = note.trim() || "飼養常規開銷";
-
-        mData.bfFundTotal = safeNum(mData.bfFundTotal) - amt;
-        mData.bfSpendDetails.push({ amt: amt, note: finalNote, date: new Date().toLocaleDateString() });
-        
-        mData.out += amt;
-        mData.outDetails["🐾 飼養費"] = safeNum(mData.outDetails["🐾 飼養費"]) + amt;
 
         amtInput.value = '';
         syncData('push');
@@ -345,26 +369,26 @@
         db.total = safeNum(db.total);
         const mData = getM();
         
-        // 頂部大盤同步
+        // 頂部大盤
         document.getElementById('top-my-balance').innerText = '$ ' + db.total.toLocaleString();
         document.getElementById('top-bf-fund').innerText = '$ ' + safeNum(mData.bfFundTotal).toLocaleString();
         
-        // 分頁一更新 (土銀)
+        // 分頁一 (土銀)
         document.getElementById('ledger-month-title').innerText = `${sm.value}月 大人可用結餘`;
         document.getElementById('my-balance-display').innerText = '$ ' + db.total.toLocaleString();
         
-        // 分頁二更新 (郵局)
-        document.getElementById('date-spend-display').innerText = '$ ' + safeNum(mData.dateTotalSpend).toLocaleString();
-
-        // 分頁三更新 (國泰)
+        // 分頁二 (國泰)
         document.getElementById('bf-fund-display').innerText = '$ ' + safeNum(mData.bfFundTotal).toLocaleString();
 
-        // 存錢進度計算
+        // 分頁三 (郵局)
+        document.getElementById('date-spend-display').innerText = '$ ' + safeNum(mData.dateTotalSpend).toLocaleString();
+
+        // 存錢進度
         let goal = safeNum(db.monthlyGoal) || 5000;
         let progress = goal > 0 ? Math.min(100, ((mData.saved / goal) * 100)) : 0;
         document.getElementById('plan-progress-percent').innerText = progress.toFixed(0) + '%';
 
-        // 渲染土銀俸祿列表
+        // 渲染明細
         const salList = document.getElementById('my-salary-list'); salList.innerHTML = '';
         (mData.salaryDetails || []).forEach((v, i)=>{
             const d = document.createElement('div'); d.className='detail-item-row'; d.onclick=()=>delSalary(i);
@@ -372,33 +396,36 @@
             salList.appendChild(d);
         });
 
-        // 渲染土銀個人支出列表
         const exList = document.getElementById('my-spend-list'); exList.innerHTML = '';
         const details = mData.outDetails || {};
         for(let c in details) {
-            const val = safeNum(details[c]); if(val === 0 || c === "🐾 飼養費" || c === "🌹 約會開銷") continue; 
+            if(safeNum(details[c]) === 0 || c === "🛍️ 零用錢開銷" || c === "🌹 約會開銷") continue; 
             const d = document.createElement('div'); d.className='detail-item-row'; d.onclick=()=>editOut(c);
-            d.innerHTML = `<span>🏷️ ${c}</span><span style="color:var(--out); font-weight:bold;">-$${val.toLocaleString()} ⚙️</span>`;
+            d.innerHTML = `<span>🏷️ ${c}</span><span style="color:var(--out); font-weight:bold;">-$${safeNum(details[c]).toLocaleString()} ⚙️</span>`;
             exList.appendChild(d);
         }
 
-        // 渲染郵局約會開銷列表
-        const dtSpList = document.getElementById('date-spend-list'); dtSpList.innerHTML = '';
-        (mData.dateSpendDetails || []).forEach((v, i)=>{
-            const d = document.createElement('div'); d.className='detail-item-row'; d.onclick=()=>delDateSpend(i);
-            d.innerHTML = `<span>🌹 ${v.note} (${v.date})</span><span style="color:var(--post-green); font-weight:bold;">-$${safeNum(v.amt).toLocaleString()} 🗑️</span>`;
-            dtSpList.appendChild(d);
+        const bfIncList = document.getElementById('bf-income-list'); bfIncList.innerHTML = '';
+        (mData.bfIncomeDetails || []).forEach((v, i)=>{
+            const d = document.createElement('div'); d.className='detail-item-row'; d.onclick=()=>delBfIncome(i);
+            d.innerHTML = `<span>💰 男友進貢 (${v.date})</span><span style="color:var(--green); font-weight:bold;">+$${safeNum(v.amt).toLocaleString()} 🗑️</span>`;
+            bfIncList.appendChild(d);
         });
 
-        // 渲染國泰飼養扣款列表
         const bfSpList = document.getElementById('bf-spend-list'); bfSpList.innerHTML = '';
         (mData.bfSpendDetails || []).forEach((v, i)=>{
             const d = document.createElement('div'); d.className='detail-item-row'; d.onclick=()=>delBfSpend(i);
-            d.innerHTML = `<span>🍖 ${v.note} (${v.date})</span><span style="color:var(--out); font-weight:bold;">-$${safeNum(v.amt).toLocaleString()} 🗑️</span>`;
+            d.innerHTML = `<span>🛍️ ${v.note} (${v.date})</span><span style="color:var(--out); font-weight:bold;">-$${safeNum(v.amt).toLocaleString()} 🗑️</span>`;
             bfSpList.appendChild(d);
         });
 
-        // 渲染存錢明細
+        const dtSpList = document.getElementById('date-spend-list'); dtSpList.innerHTML = '';
+        (mData.dateSpendDetails || []).forEach((v, i)=>{
+            const d = document.createElement('div'); d.className='detail-item-row'; d.onclick=()=>delDateSpend(i);
+            d.innerHTML = `<span>🌹 ${v.note} (${v.date})</span><span style="color:var(--date-blue); font-weight:bold;">-$${safeNum(v.amt).toLocaleString()} 🗑️</span>`;
+            dtSpList.appendChild(d);
+        });
+
         const svList = document.getElementById('my-saved-list'); svList.innerHTML = '';
         (mData.savedDetails || []).forEach((v, i)=>{
             const d = document.createElement('div'); d.className='detail-item-row'; d.onclick=()=>delIn(i);
@@ -406,7 +433,6 @@
             svList.appendChild(d);
         });
 
-        // 渲染年度計畫表
         const activeYear = sy.value; document.getElementById('plan-year-label').innerText = activeYear;
         const monthGrid = document.getElementById('plan-month-grid');
         if(monthGrid) {
@@ -415,28 +441,33 @@
                 const mD = getMByArgs(activeYear, m); const mG = safeNum(db.monthlyGoal) || 5000;
                 const pct = mG > 0 ? Math.min(100, ((mD.saved / mG) * 100)) : 0;
                 const row = document.createElement('div'); row.className = 'plan-month-card'; row.onclick = () => editMonthlyGoal(m);
-                row.innerHTML = `<span class="plan-month-label">${m} 月進度</span><div><span style="color:var(--green); font-weight:bold;">$${mD.saved.toLocaleString()}</span><span style="color:#999; font-size:0.8rem;"> / $${mG.toLocaleString()}</span><span style="color:#c5a880; font-size:0.8rem; margin-left:5px;">(${pct.toFixed(0)}%)</span></div>`;
+                row.innerHTML = `<span class="plan-month-label">${m} 月進度</span><div><span style="color:var(--green); font-weight:bold;">$${mD.saved.toLocaleString()}</span><span style="color:#999; font-size:0.8rem;"> / $${mG.toLocaleString()}</span><span style="color:var(--gold); font-size:0.8rem; margin-left:5px;">(${pct.toFixed(0)}%)</span></div>`;
                 monthGrid.appendChild(row);
             }
         }
         
-        // 渲染圓餅圖
+        // 圓餅圖
         if(document.getElementById('page-charts').classList.contains('active')) {
             const ctx = document.getElementById('outPieChart'); if(outPieChart) outPieChart.destroy();
             const labs = Object.keys(details).filter(c => safeNum(details[c]) > 0); const dataVals = labs.map(c => safeNum(details[c]));
             outPieChart = new Chart(ctx, { 
                 type:'doughnut', 
-                data: { labels: labs.length?labs:["暫無支出"], datasets:[{data: labs.length?dataVals:[1], backgroundColor:['#b35656','#c5a880','#6d8764','#0f264c','#2d8a4e','#a55eea','#1abc9c']}] }, 
+                data: { labels: labs.length?labs:["暫無支出"], datasets:[{data: labs.length?dataVals:[1], backgroundColor:['#0052cc','#ff8da1','#38b6ff','#2ecc71','#f39c12','#a55eea','#1abc9c']}] }, 
                 options: { plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } } } } 
             });
         }
     }
 
-    // 撤銷明細邏輯
+    // 撤銷邏輯
     async function delSalary(idx) {
         const mData = getM(); const item = mData.salaryDetails[idx];
         const res = await Swal.fire({ title: '撤銷此筆土銀俸祿？', text: `$${safeNum(item.amt)}`, showCancelButton: true });
         if(res.isConfirmed) { db.total = safeNum(db.total) - safeNum(item.amt); mData.salary = safeNum(mData.salary) - safeNum(item.amt); mData.salaryDetails.splice(idx, 1); syncData('push'); }
+    }
+    async function delBfIncome(idx) {
+        const mData = getM(); const item = mData.bfIncomeDetails[idx];
+        const res = await Swal.fire({ title: '撤銷此筆進貢金額？', text: `$${safeNum(item.amt)}`, showCancelButton: true });
+        if(res.isConfirmed) { mData.bfFundTotal = safeNum(mData.bfFundTotal) - safeNum(item.amt); mData.bfIncomeDetails.splice(idx, 1); syncData('push'); }
     }
     async function delIn(idx) {
         const mData = getM(); const item = mData.savedDetails[idx];
@@ -456,11 +487,11 @@
     }
     async function delBfSpend(idx) {
         const mData = getM(); const item = mData.bfSpendDetails[idx];
-        const res = await Swal.fire({ title: '撤銷此筆國泰飼料費？', text: `$${safeNum(item.amt)}`, showCancelButton: true });
+        const res = await Swal.fire({ title: '撤銷此筆國泰零用錢支出？', text: `$${safeNum(item.amt)}`, showCancelButton: true });
         if(res.isConfirmed) {
             mData.bfFundTotal = safeNum(mData.bfFundTotal) + safeNum(item.amt);
             mData.out = safeNum(mData.out) - safeNum(item.amt);
-            mData.outDetails["🐾 飼養費"] = safeNum(mData.outDetails["🐾 飼養費"]) - safeNum(item.amt);
+            mData.outDetails["🛍️ 零用錢開銷"] = safeNum(mData.outDetails["🛍️ 零用錢開銷"]) - safeNum(item.amt);
             mData.bfSpendDetails.splice(idx, 1); 
             syncData('push'); 
         }
@@ -507,7 +538,7 @@
             if(mode==='push') await fetch(WEB_APP_URL, {method:'POST', body:JSON.stringify({data:db})});
             else { 
                 const r = await fetch(WEB_APP_URL); const j = await r.json(); 
-                if(j && typeof j.total !== 'undefined') { db = j; db.total = safeNum(db.total); if(!db.categories) db.categories = ["伙食","交通","娛樂","購物","其他"]; }
+                if(j && typeof j.total !== 'undefined') { db = j; db.total = safeNum(db.total); if(!db.categories) db.categories = ["伙食","交通","娛樂","購物","核心其他"]; }
             }
             updateUI();
         } catch(e) { console.error(e); }
