@@ -73,11 +73,13 @@
         .status-toggle-btn.unpaid { border-color: var(--out); color: var(--out); background: #fdf3f2; }
 
         .action-btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .action-btn-grid-three { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         .action-btn { border: none; padding: 14px; border-radius: 15px; font-weight: bold; color: white; cursor: pointer; font-size: 0.95rem; display: flex; align-items: center; justify-content: center; gap: 5px; transition: opacity 0.2s; }
         .action-btn:active { opacity: 0.8; }
         .action-btn-full { grid-column: span 2; }
         
         .btn-land { background: var(--land-blue); }
+        .btn-save { background: var(--green); grid-column: span 2; margin-top: 5px; }
         .btn-out { background: var(--out); }
         .btn-pink { background: var(--bf-pink); }
         .btn-date { background: var(--date-blue); }
@@ -95,15 +97,18 @@
         .badge-unpaid { background: #fdedec; color: var(--out); }
 
         .plan-scroll-box { max-height: 380px; overflow-y: auto; padding-right: 2px; }
-        .plan-month-card { display: flex; justify-content: space-between; align-items: center; background: var(--card-bg); padding: 15px; border-radius: 15px; margin-bottom: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.02); cursor: pointer; border-left: 4px solid var(--green); }
-        .plan-month-label { font-weight: bold; font-size: 0.95rem; }
+        .plan-month-card { background: var(--card-bg); padding: 15px; border-radius: 15px; margin-bottom: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.02); border-left: 4px solid var(--green); text-align: left; }
+        .plan-month-header { display: flex; justify-content: space-between; font-weight: bold; font-size: 0.95rem; margin-bottom: 8px; }
+        
+        /* 進度條樣式 */
+        .progress-bar-bg { background: #eef2f5; width: 100%; height: 10px; border-radius: 10px; overflow: hidden; margin-top: 5px; }
+        .progress-bar-fill { background: var(--green); height: 100%; width: 0%; transition: width 0.3s ease; }
         
         .dropdown-selects { display: flex; gap: 5px; align-items: center; }
         .dropdown-selects select { border: 1px solid rgba(255,255,255,0.15); padding: 5px 8px; border-radius: 8px; background: rgba(255,255,255,0.08); color: white; outline: none; font-size: 0.8rem; }
         .dropdown-selects select option { color: black; }
         
         .chart-box { background: var(--card-bg); border-radius: 20px; padding: 15px; margin-bottom: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.02); }
-
         .chart-tabs-menu { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; margin-bottom: 15px; }
         .chart-tab-btn { background: #eef2f5; border: none; padding: 8px 2px; border-radius: 10px; font-size: 0.75rem; font-weight: bold; color: #555; cursor: pointer; transition: all 0.2s; text-align: center; }
         .chart-tab-btn.active { background: var(--dark-bg); color: white; }
@@ -184,9 +189,10 @@
                 <div class="card-big-amount" id="my-balance-display" style="color: var(--land-blue);">$ 0</div>
                 <input type="number" id="my-amount" placeholder="輸入金額..." inputmode="numeric" class="num-input">
                 <input type="date" id="my-date" class="date-picker-input">
-                <div class="action-btn-grid">
-                    <button class="action-btn btn-land" onclick="askForRemarkAndDo('my', 'salary')">🧧 領取精神賠償金</button>
+                <div class="action-btn-grid-three">
+                    <button class="action-btn btn-land" onclick="askForRemarkAndDo('my', 'salary')">🧧 領取精神賠償費</button>
                     <button class="action-btn btn-out" onclick="askForRemarkAndDo('my', 'spend')">💸 揮霍</button>
+                    <button class="action-btn btn-save" onclick="askForSaving()">💰 存錢去</button>
                 </div>
             </div>
             <div class="list-section-title">🧧 本月薪資明細 (土銀)</div>
@@ -203,8 +209,8 @@
                 <input type="number" id="bf-amount" placeholder="輸入金額..." inputmode="numeric" class="num-input">
                 <input type="date" id="bf-date" class="date-picker-input">
                 <div class="action-btn-grid">
-                    <button class="action-btn btn-pink" onclick="askForRemarkAndDo('bf', 'deposit')">💰 飼養員存入基金</button>
-                    <button class="action-btn btn-out" onclick="askForRemarkAndDo('bf', 'spend')">🐟 罐罐支出</button>
+                    <button class="action-btn btn-pink" onclick="askForRemarkAndDo('bf', 'deposit')">💰 共同基金</button>
+                    <button class="action-btn btn-out" onclick="askForRemarkAndDo('bf', 'spend')">🐟 罐罐購買</button>
                 </div>
             </div>
             <div class="list-section-title">💰 飼養員基金存入歷史</div>
@@ -216,7 +222,7 @@
         <div id="page-date-ledger" class="page">
             <div class="main-card">
                 <span class="bank-tag tag-post">📮 約會扣款</span>
-                <div class="card-mini-title">🌹 本月約會支出累計</div>
+                <div class="card-mini-title">🌹 本月約會支出累計=</div>
                 <div class="card-big-amount" id="date-balance-display" style="color: var(--date-blue);">$ 0</div>
                 <input type="number" id="date-amount" placeholder="輸入金額..." inputmode="numeric" class="num-input">
                 <select id="date-deduct-source" class="source-select-input">
@@ -235,7 +241,7 @@
         <div id="page-site-ledger" class="page">
             <div class="main-card">
                 <span class="bank-tag tag-site">👷 工地款項</span>
-                <div class="card-mini-title">🏗️ 工地零用金總餘額</div>
+                <div class="card-mini-title">🏗️ 工地零用金總餘額=</div>
                 <div class="card-big-amount" id="site-balance-display" style="color: var(--site-orange);">$ 0</div>
                 <input type="number" id="site-amount" placeholder="輸入金額..." inputmode="numeric" class="num-input">
                 <div class="input-row-grid">
@@ -258,7 +264,7 @@
                     <button class="action-btn btn-out" onclick="askForRemarkAndDo('site', 'spend')">🛠️ 零用金支出</button>
                 </div>
             </div>
-            <div class="list-section-title">🏗️ 零用金撥補</div>
+            <div class="list-section-title">🏗️ 零用金撥補紀錄</div>
             <div class="detail-list-wrapper" id="site-income-list"></div>
             <div class="list-section-title">🛠️ 零用金支出明細</div>
             <div class="detail-list-wrapper" id="site-spend-list"></div>
@@ -266,7 +272,7 @@
 
         <div id="page-saving-plan" class="page">
             <div class="main-card">
-                <div class="card-mini-title">🐷 365天階梯存錢累計</div>
+                <div class="card-mini-title">🐷 12個月月份存錢累計 (每月目標 $5,000)</div>
                 <div class="card-big-amount" id="plan-total-display" style="color: var(--green);">$ 0</div>
                 <div class="plan-scroll-box" id="plan-list-box"></div>
             </div>
@@ -304,10 +310,12 @@ let db = {
     'bf-deposit': [], 'bf-spend': [],
     date_spend: [],
     site_income: [], site_spend: [],
-    plan_checked: []
+    plan_checked: [] // 此處結構轉換為儲存各月份已存金額項目：{day: 月份數字, checked: 金額}
 };
 let currentSitePaidStatus = true;
 let currentChartTab = 'my';
+
+const MONTH_TARGET = 5000; // 每月暫定存5000元
 
 window.onload = function() {
     initYearMonthSelects();
@@ -503,6 +511,45 @@ function askForRemarkAndDo(page, type) {
     });
 }
 
+// 專屬存錢點擊動作
+function askForSaving() {
+    let amtInput = document.getElementById('my-amount'), val = parseInt(amtInput.value);
+    if(!val || val <= 0) return Swal.fire('提示', '請在上方輸入想存入的金額！', 'warning');
+    let date = document.getElementById('my-date').value;
+    
+    // 預設抓取當前選擇的月份
+    let curM = document.getElementById('sel-month').value;
+
+    Swal.fire({
+        title: '💰 投入月份計畫',
+        text: `確認將 $${val.toLocaleString()} 存入 ${curM} 月的存錢計畫中嗎？(會同步扣除阿毛帳本餘額)`,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: '確定存錢'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            let sharedId = Date.now();
+            
+            // 1. 阿毛帳本產生一筆支出
+            let spendItem = { id: sharedId, amount: val, date: date, remark: `[存錢] 投入 ${curM}月計畫` };
+            db.my_spend.push(spendItem);
+            syncToGoogleSheets('insert', 'my_spend', spendItem);
+
+            // 2. 存錢計畫寫入（使用現有後端的 plan_toggle 機制，傳入 month 數字與金額）
+            // 在新版邏輯中，我們讓 day=月份, checked=true/金額
+            syncToGoogleSheets('plan_toggle', 'plan_checked', { day: parseInt(curM), checked: true, amount: val });
+            
+            // 本地暫時同步，等下載
+            if(!db.plan_checked) db.plan_checked = [];
+            // 為簡化，我們直接重抓或直接push進去
+            fetchDataFromGoogleSheets();
+
+            amtInput.value = '';
+            Swal.fire('成功', `已成功存入 ${curM} 月份計畫！進度條已更新。`, 'success');
+        }
+    });
+}
+
 function executeLedgerAction(page, type, val, date, remark) {
     let absVal = Math.abs(val);
     if (page === 'my') {
@@ -524,12 +571,10 @@ function executeLedgerAction(page, type, val, date, remark) {
         let deductSource = document.getElementById('date-deduct-source').value;
         let sharedId = Date.now();
         
-        // 1. 寫入約會帳本
         let newItem = { id: sharedId, amount: absVal, date: date, remark: remark, source: deductSource };
         db['date_spend'].push(newItem);
         syncToGoogleSheets('insert', 'date_spend', newItem);
         
-        // 2. 嚴謹連動寫入：只對應發送一次給目標帳本，不再重複雙寫
         let linkedKey = (deductSource === 'my') ? 'my_spend' : 'bf-spend';
         let linkedItem = { id: sharedId, amount: absVal, date: date, remark: `[約會支出] ${remark}`, isDateLink: true };
         db[linkedKey].push(linkedItem);
@@ -554,24 +599,55 @@ function deleteItem(dbKey, id) {
     });
 }
 
+// 渲染全新的 12個月 月份存錢進度條邏輯
 function renderSavingPlan() {
     const el = document.getElementById('plan-list-box');
     if(!el) return;
-    let html = '', total = 0;
-    if(!db.plan_checked) db.plan_checked = [];
-    for(let i = 1; i <= 365; i++) {
-        let isDone = db.plan_checked.includes(i);
-        if(isDone) total += i;
-        html += `<div class="plan-month-card" style="${isDone ? 'background:#e6f9ed; border-left:4px solid var(--green);' : ''}" onclick="togglePlan(${i})"><div>第 ${i} 天份</div><div style="${isDone ? 'color:var(--green); font-weight:bold;' : 'color:#999;'}">${isDone ? '✅ 已存' : '⬜ $'+i}</div></div>`;
-    }
-    document.getElementById('plan-total-display').innerText = "$ " + total.toLocaleString();
-    el.innerHTML = html;
-}
+    
+    // 計算每個月各存了多少錢
+    let monthMoneyMap = {};
+    for(let m = 1; m <= 12; m++) { monthMoneyMap[m] = 0; }
 
-function togglePlan(dayNum) {
-    let isChecking = !db.plan_checked.includes(dayNum);
-    if(!isChecking) db.plan_checked = db.plan_checked.filter(d => d !== dayNum); else db.plan_checked.push(dayNum);
-    syncToGoogleSheets('plan_toggle', 'plan_checked', { day: dayNum, checked: isChecking });
+    // 透過過濾阿毛帳本中帶有 [存錢] 的支出，或者從後端 plan_checked 陣列計算
+    // 這裡我們直接從明細中精準統計，這樣最不容易因為刪除而對不上有誤差
+    if(Array.isArray(db.my_spend)) {
+        db.my_spend.forEach(item => {
+            if(item && item.remark && item.remark.includes('[存錢] 投入')) {
+                // 抓出是幾月
+                let match = item.remark.match(/投入\s*(\d+)\s*月/);
+                if(match && match[1]) {
+                    let mNum = parseInt(match[1]);
+                    if(monthMoneyMap[mNum] !== undefined) {
+                        monthMoneyMap[mNum] += Math.abs(item.amount || 0);
+                    }
+                }
+            }
+        });
+    }
+
+    let html = '', grandTotal = 0;
+    
+    for(let m = 1; m <= 12; m++) {
+        let saved = monthMoneyMap[m];
+        grandTotal += saved;
+        let percent = Math.min(Math.round((saved / MONTH_TARGET) * 100), 100);
+        
+        html += `
+        <div class="plan-month-card" style="${percent >= 100 ? 'background:#e6f9ed; border-left:4px solid var(--green);' : ''}">
+            <div class="plan-month-header">
+                <div>📅 ${m} 月份存錢專案</div>
+                <div style="color: ${percent >= 100 ? 'var(--green)' : '#555'}; font-weight:bold;">
+                    $${saved.toLocaleString()} / $${MONTH_TARGET.toLocaleString()} (${percent}%)
+                </div>
+            </div>
+            <div class="progress-bar-bg">
+                <div class="progress-bar-fill" style="width: ${percent}%;"></div>
+            </div>
+        </div>`;
+    }
+    
+    document.getElementById('plan-total-display').innerText = "$ " + grandTotal.toLocaleString();
+    el.innerHTML = html;
 }
 
 let chartBarInstance = null;
