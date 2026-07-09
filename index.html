@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>記帳小本本</title>
+    <title>我們的存摺 V22.1.0 - 穩定修復版</title>
     <link rel="apple-touch-icon" href="image.png">
     <link rel="icon" href="image.png">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -61,7 +61,6 @@
         .date-picker-input { width: 100%; padding: 10px; border-radius: 10px; border: 1px solid #eef2f5; box-sizing: border-box; margin-bottom: 12px; font-size: 0.9rem; text-align: center; outline: none; background: #ffffff; color: #555; font-weight: 500; }
         .source-select-input { width: 100%; padding: 12px; border-radius: 12px; border: 2px solid #eef2f5; box-sizing: border-box; margin-bottom: 12px; font-size: 1rem; text-align-last: center; font-weight: bold; color: var(--dark-bg); outline: none; background: #ffffff; }
 
-        /* 工地專用雙欄選擇器 (付款人與付款狀態) */
         .input-row-grid { display: grid; grid-template-columns: 1.2fr 1fr; gap: 10px; margin-bottom: 12px; }
         .status-toggle-btn { width: 100%; padding: 10px; border-radius: 12px; border: 2px solid #eef2f5; font-weight: bold; cursor: pointer; font-size: 0.95rem; background: #fff; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 4px; box-sizing: border-box; }
         .status-toggle-btn.paid { border-color: var(--green); color: var(--green); background: #f0fbf5; }
@@ -76,7 +75,6 @@
         .btn-pink { background: var(--bf-pink); }
         .btn-date { background: var(--date-blue); }
         .btn-site { background: var(--site-orange); }
-        .btn-save { background: var(--green); }
 
         .list-section-title { text-align: left; font-size: 0.85rem; font-weight: bold; color: #7f8c8d; margin: 15px 0 8px 5px; display: flex; justify-content: space-between; }
         .detail-list-wrapper { text-align: left; max-height: 180px; overflow-y: auto; background: var(--card-bg); border-radius: 18px; padding: 5px; box-shadow: 0 4px 15px rgba(0,0,0,0.02); border: 1px solid rgba(0,0,0,0.02); }
@@ -90,11 +88,13 @@
 
         .plan-scroll-box { max-height: 380px; overflow-y: auto; padding-right: 2px; }
         .plan-month-card { display: flex; justify-content: space-between; align-items: center; background: var(--card-bg); padding: 15px; border-radius: 15px; margin-bottom: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.02); cursor: pointer; border-left: 4px solid var(--land-blue); }
+        .plan-month-label { font-weight: bold; font-size: 0.95rem; }
         
         .settings-gear { cursor: pointer; font-size: 1.2rem; opacity: 0.7; padding: 5px; transition: transform 0.2s; }
         .settings-gear:hover { transform: rotate(45deg); opacity: 1; }
-        .dropdown-selects { display: flex; gap: 5px; }
+        .dropdown-selects { display: flex; gap: 5px; align-items: center; }
         .dropdown-selects select { border: 1px solid rgba(255,255,255,0.15); padding: 5px 8px; border-radius: 8px; background: rgba(255,255,255,0.08); color: white; outline: none; font-size: 0.8rem; }
+        .dropdown-selects select option { color: black; }
         
         .loading-mask { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(18,18,18,0.8); display: none; align-items: center; justify-content: center; z-index: 10000; font-weight: bold; color: white; font-size: 1.1rem; }
         .chart-box { background: var(--card-bg); border-radius: 20px; padding: 15px; margin-bottom: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.02); }
@@ -105,7 +105,6 @@
 <div id="loading" class="loading-mask">🌌 正在同步極光星空金庫...</div>
 
 <div class="app-container">
-    <!-- 頂部面板 -->
     <div class="top-header">
         <div class="header-title-bar">
             <div class="header-title">我們的存摺</div>
@@ -127,7 +126,6 @@
         </div>
     </div>
 
-    <!-- 六大功能分頁鈕 -->
     <div class="nav-tab-container">
         <button class="nav-tab active" onclick="switchPage('page-my-ledger', event)">
             <div class="nav-tab-icon" style="color: var(--land-blue);">📋</div>
@@ -157,7 +155,6 @@
 
     <div class="content-box">
         
-        <!-- 分頁一：阿毛帳本 -->
         <div id="page-my-ledger" class="page active">
             <div class="main-card">
                 <span class="bank-tag tag-land">🏦 土地銀行</span>
@@ -176,7 +173,6 @@
             <div class="detail-list-wrapper" id="my-spend-list"></div>
         </div>
 
-        <!-- 分頁二：阿毛飼養員 -->
         <div id="page-bf-feed" class="page">
             <div class="main-card" style="background: #fffbfb; border: 1px solid #ffe3e7;">
                 <span class="bank-tag tag-cathay">🌳 國泰世華</span>
@@ -195,7 +191,6 @@
             <div class="detail-list-wrapper" id="bf-spend-list"></div>
         </div>
 
-        <!-- 分頁三：約會記帳 -->
         <div id="page-date-ledger" class="page">
             <div class="main-card">
                 <span class="bank-tag tag-post">📮 郵局存款</span>
@@ -214,7 +209,6 @@
             <div class="detail-list-wrapper" id="date-spend-list"></div>
         </div>
 
-        <!-- 分頁四：工地帳本 (全面升級版) -->
         <div id="page-site-ledger" class="page">
             <div class="main-card">
                 <span class="bank-tag tag-site">👷 工地款項</span>
@@ -222,7 +216,6 @@
                 <div class="card-big-amount" id="site-balance-display" style="color: var(--site-orange);">$ 0</div>
                 <input type="number" id="site-amount" placeholder="輸入金額..." inputmode="numeric" class="num-input">
                 
-                <!-- 新增：行內雙欄選擇 (付款人 + 是否付款狀態鈕) -->
                 <div class="input-row-grid">
                     <select id="site-payer" class="source-select-input" style="margin-bottom:0;">
                         <option value="阿毛">👤 付款人：阿毛</option>
@@ -248,7 +241,6 @@
             <div class="detail-list-wrapper" id="site-spend-list"></div>
         </div>
 
-        <!-- 分頁五：存錢計畫 -->
         <div id="page-saving-plan" class="page">
             <div class="main-card">
                 <div class="card-mini-title">🐷 365天階梯存錢累計</div>
@@ -257,7 +249,6 @@
             </div>
         </div>
 
-        <!-- 分頁六：數據統計 -->
         <div id="page-charts" class="page">
             <div class="chart-box">
                 <div style="font-size:0.85rem; font-weight:bold; margin-bottom:10px;">📊 各帳本金流分配圖</div>
@@ -273,18 +264,29 @@
 </div>
 
 <script>
-// 初始化設定與資料庫
-let db = JSON.parse(localStorage.getItem('aurora_wallet_v22')) || {
-    my_salary: [], my_spend: [],
-    bf-deposit: [], bf-spend: [],
-    date_deposit: [], date_spend: [],
-    site_income: [], site_spend: [],
-    plan_checked: []
-};
+// 初始化設定與資料庫安全讀取 (相容舊格式)
+let db = {};
+try {
+    let raw = localStorage.getItem('aurora_wallet_v22') || localStorage.getItem('aurora_wallet_v21') || localStorage.getItem('aurora_wallet');
+    db = JSON.parse(raw) || {};
+} catch(e) {
+    db = {};
+}
 
-// 記錄當前工地付款狀態變數 (預設 true = 已付款 ✅)
+// 欄位安全初始化
+if(!db.my_salary) db.my_salary = [];
+if(!db.my_spend) db.my_spend = [];
+if(!db['bf-deposit'] && db.bf_deposit) db['bf-deposit'] = db.bf_deposit; // 自動橋接
+if(!db['bf-deposit']) db['bf-deposit'] = [];
+if(!db['bf-spend'] && db.bf_spend) db['bf-spend'] = db.bf_spend;
+if(!db['bf-spend']) db['bf-spend'] = [];
+if(!db.date_deposit) db.date_deposit = [];
+if(!db.date_spend) db.date_spend = [];
+if(!db.site_income) db.site_income = [];
+if(!db.site_spend) db.site_spend = [];
+if(!db.plan_checked) db.plan_checked = [];
+
 let currentSitePaidStatus = true;
-
 const GITHUB_TOKEN = localStorage.getItem('aurora_g_token') || "";
 const GITHUB_GIST_ID = localStorage.getItem('aurora_g_gist') || "";
 
@@ -301,8 +303,9 @@ function initYearMonthSelects() {
     
     let sy = document.getElementById('sel-year');
     let sm = document.getElementById('sel-month');
-    sy.innerHTML = ''; sm.innerHTML = '';
+    if(!sy || !sm) return;
     
+    sy.innerHTML = ''; sm.innerHTML = '';
     for(let i = curY - 2; i <= curY + 2; i++) {
         sy.add(new Option(i + " 年", i));
     }
@@ -315,35 +318,37 @@ function initYearMonthSelects() {
 
 function initDates() {
     const todayStr = new Date().toISOString().split('T')[0];
-    document.getElementById('my-date').value = todayStr;
-    document.getElementById('bf-date').value = todayStr;
-    document.getElementById('date-date').value = todayStr;
-    document.getElementById('site-date').value = todayStr;
+    if(document.getElementById('my-date')) document.getElementById('my-date').value = todayStr;
+    if(document.getElementById('bf-date')) document.getElementById('bf-date').value = todayStr;
+    if(document.getElementById('date-date')) document.getElementById('date-date').value = todayStr;
+    if(document.getElementById('site-date')) document.getElementById('site-date').value = todayStr;
 }
 
 function switchPage(pageId, event) {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-    document.getElementById(pageId).classList.add('active');
+    
+    const targetPage = document.getElementById(pageId);
+    if(targetPage) targetPage.classList.add('active');
     if(event) event.currentTarget.classList.add('active');
     updateUI();
 }
 
-// 切換工地付款狀態
 function toggleSitePaidStatus() {
     currentSitePaidStatus = !currentSitePaidStatus;
     const btn = document.getElementById('btn-site-paid-toggle');
     const icon = document.getElementById('site-paid-icon');
     const text = document.getElementById('site-paid-text');
+    if(!btn) return;
     
     if (currentSitePaidStatus) {
         btn.className = "status-toggle-btn paid";
-        icon.innerText = "✅";
-        text.innerText = "已付款";
+        if(icon) icon.innerText = "✅";
+        if(text) text.innerText = "已付款";
     } else {
         btn.className = "status-toggle-btn unpaid";
-        icon.innerText = "❌";
-        text.innerText = "未付款";
+        if(icon) icon.innerText = "❌";
+        if(text) text.innerText = "未付款";
     }
 }
 
@@ -354,67 +359,72 @@ function saveDB() {
 }
 
 function updateUI() {
-    const targetY = parseInt(document.getElementById('sel-year').value);
-    const targetM = parseInt(document.getElementById('sel-month').value);
+    const sy = document.getElementById('sel-year');
+    const sm = document.getElementById('sel-month');
+    if(!sy || !sm) return;
     
-    const filterByYM = (list) => list.filter(item => {
-        if(!item.date) return false;
-        const pts = item.date.split('-');
-        return parseInt(pts[0]) === targetY && parseInt(pts[1]) === targetM;
-    });
+    const targetY = parseInt(sy.value);
+    const targetM = parseInt(sm.value);
+    
+    const filterByYM = (list) => {
+        if(!Array.isArray(list)) return [];
+        return list.filter(item => {
+            if(!item || !item.date) return false;
+            const pts = item.date.split('-');
+            return parseInt(pts[0]) === targetY && parseInt(pts[1]) === targetM;
+        });
+    };
 
-    // 1. 阿毛帳本計算
+    // 1. 阿毛帳本
     let mSalary = filterByYM(db.my_salary);
     let mSpend = filterByYM(db.my_spend);
-    let myBal = mSalary.reduce((sum, i) => sum + i.amount, 0) - mSpend.reduce((sum, i) => sum + i.amount, 0);
-    document.getElementById('my-balance-display').innerText = "$ " + myBal.toLocaleString();
-    document.getElementById('top-my-balance').innerText = "$ " + myBal.toLocaleString();
-
+    let myBal = mSalary.reduce((sum, i) => sum + (i.amount||0), 0) - mSpend.reduce((sum, i) => sum + (i.amount||0), 0);
+    if(document.getElementById('my-balance-display')) document.getElementById('my-balance-display').innerText = "$ " + myBal.toLocaleString();
+    if(document.getElementById('top-my-balance')) document.getElementById('top-my-balance').innerText = "$ " + myBal.toLocaleString();
     renderList('my-salary-list', mSalary, 'my_salary');
     renderList('my-spend-list', mSpend, 'my_spend');
 
-    // 2. 阿毛飼養員計算
-    let bDep = filterByYM(db['bf-deposit'] || []);
-    let bSpd = filterByYM(db['bf-spend'] || []);
-    let bfBal = bDep.reduce((sum, i) => sum + i.amount, 0) - bSpd.reduce((sum, i) => sum + i.amount, 0);
-    document.getElementById('bf-balance-display').innerText = "$ " + bfBal.toLocaleString();
+    // 2. 阿毛飼養員
+    let bDep = filterByYM(db['bf-deposit']);
+    let bSpd = filterByYM(db['bf-spend']);
+    let bfBal = bDep.reduce((sum, i) => sum + (i.amount||0), 0) - bSpd.reduce((sum, i) => sum + (i.amount||0), 0);
+    if(document.getElementById('bf-balance-display')) document.getElementById('bf-balance-display').innerText = "$ " + bfBal.toLocaleString();
     renderList('bf-deposit-list', bDep, 'bf-deposit');
     renderList('bf-spend-list', bSpd, 'bf-spend');
 
-    // 3. 約會帳本計算
+    // 3. 約會帳本
     let dDep = filterByYM(db.date_deposit);
     let dSpd = filterByYM(db.date_spend);
-    let dBal = dDep.reduce((sum, i) => sum + i.amount, 0) - dSpd.reduce((sum, i) => sum + i.amount, 0);
-    document.getElementById('date-balance-display').innerText = "$ " + dBal.toLocaleString();
+    let dBal = dDep.reduce((sum, i) => sum + (i.amount||0), 0) - dSpd.reduce((sum, i) => sum + (i.amount||0), 0);
+    if(document.getElementById('date-balance-display')) document.getElementById('date-balance-display').innerText = "$ " + dBal.toLocaleString();
     renderList('date-deposit-list', dDep, 'date_deposit');
     renderList('date-spend-list', dSpd, 'date_spend');
 
-    // 4. 工地帳本計算與清單渲染
+    // 4. 工地帳本
     let sInc = filterByYM(db.site_income);
     let sSpd = filterByYM(db.site_spend);
-    let siteBal = sInc.reduce((sum, i) => sum + i.amount, 0) - sSpd.reduce((sum, i) => sum + i.amount, 0);
-    document.getElementById('site-balance-display').innerText = "$ " + siteBal.toLocaleString();
-    document.getElementById('top-site-balance').innerText = "$ " + siteBal.toLocaleString();
+    let siteBal = sInc.reduce((sum, i) => sum + (i.amount||0), 0) - sSpd.reduce((sum, i) => sum + (i.amount||0), 0);
+    if(document.getElementById('site-balance-display')) document.getElementById('site-balance-display').innerText = "$ " + siteBal.toLocaleString();
+    if(document.getElementById('top-site-balance')) document.getElementById('top-site-balance').innerText = "$ " + siteBal.toLocaleString();
     renderList('site-income-list', sInc, 'site_income');
     renderList('site-spend-list', sSpd, 'site_spend');
 
-    // 5. 365天存錢計畫渲染
+    // 5. 存錢計畫與圖表
     renderSavingPlan();
-
-    // 6. 圖表更新
     renderCharts(myBal, bfBal, dBal, siteBal, mSalary, mSpend, bDep, bSpd, dDep, dSpd, sInc, sSpd);
 }
 
 function renderList(elementId, items, dbKey) {
+    const el = document.getElementById(elementId);
+    if(!el) return;
+    
     let html = '';
-    if(items.length === 0) {
+    if(!items || items.length === 0) {
         html = '<div style="padding:15px; text-align:center; color:#aaa; font-size:0.85rem;">本月尚無紀錄天晴</div>';
     } else {
-        // 由新到舊排序
         items.sort((a,b) => new Date(b.date) - new Date(a.date));
         items.forEach(item => {
             let noteStr = '';
-            // 針對工地帳本，附加上付款人與是否付款的標籤
             if (dbKey === 'site_spend' || dbKey === 'site_income') {
                 const p = item.payer || '未指定';
                 const s = item.isPaid !== false ? '<span class="badge-status badge-paid">✅ 已付</span>' : '<span class="badge-status badge-unpaid">❌ 未付</span>';
@@ -423,7 +433,7 @@ function renderList(elementId, items, dbKey) {
             html += `
                 <div class="detail-item-row" onclick="deleteItem('${dbKey}', ${item.id})">
                     <div>
-                        <div style="font-weight:600; color:#333;">$ ${item.amount.toLocaleString()}</div>
+                        <div style="font-weight:600; color:#333;">$ ${(item.amount||0).toLocaleString()}</div>
                         <div style="font-size:0.75rem; color:#999; margin-top:2px;">📅 ${item.date}</div>
                         ${noteStr}
                     </div>
@@ -432,10 +442,9 @@ function renderList(elementId, items, dbKey) {
             `;
         });
     }
-    document.getElementById(elementId).innerHTML = html;
+    el.innerHTML = html;
 }
 
-// 帳本動作
 function doMyAction(type) {
     let amtInput = document.getElementById('my-amount');
     let val = parseInt(amtInput.value);
@@ -454,9 +463,6 @@ function doBfAction(type) {
     let val = parseInt(amtInput.value);
     if(!val || val <= 0) return Swal.fire('提示', '請輸入大於0的金額！', 'warning');
     let date = document.getElementById('bf-date').value;
-    
-    if(!db['bf-deposit']) db['bf-deposit'] = [];
-    if(!db['bf-spend']) db['bf-spend'] = [];
     
     let targetList = (type === 'deposit') ? db['bf-deposit'] : db['bf-spend'];
     targetList.push({ id: Date.now(), amount: val, date: date });
@@ -478,7 +484,6 @@ function doDateAction(type) {
     Swal.fire('記帳成功', '已記入約會公積金！', 'success');
 }
 
-// 工地帳本動作（包含付款人、已付/未付狀態）
 function doSiteAction(type) {
     let amtInput = document.getElementById('site-amount');
     let val = parseInt(amtInput.value);
@@ -486,7 +491,7 @@ function doSiteAction(type) {
     
     let date = document.getElementById('site-date').value;
     let payer = document.getElementById('site-payer').value;
-    let isPaid = currentSitePaidStatus; // 讀取當前打勾打叉狀態
+    let isPaid = currentSitePaidStatus;
     
     let targetList = (type === 'income') ? db.site_income : db.site_spend;
     targetList.push({ 
@@ -521,11 +526,11 @@ function deleteItem(dbKey, id) {
     });
 }
 
-// 365天存錢計畫
 function renderSavingPlan() {
+    const el = document.getElementById('plan-list-box');
+    if(!el) return;
     let html = '';
     let totalPlanAmt = 0;
-    if(!db.plan_checked) db.plan_checked = [];
     
     for(let i = 1; i <= 365; i++) {
         let isDone = db.plan_checked.includes(i);
@@ -542,12 +547,11 @@ function renderSavingPlan() {
             </div>
         `;
     }
-    document.getElementById('plan-total-display').innerText = "$ " + totalPlanAmt.toLocaleString();
-    document.getElementById('plan-list-box').innerHTML = html;
+    if(document.getElementById('plan-total-display')) document.getElementById('plan-total-display').innerText = "$ " + totalPlanAmt.toLocaleString();
+    el.innerHTML = html;
 }
 
 function togglePlan(dayNum) {
-    if(!db.plan_checked) db.plan_checked = [];
     if(db.plan_checked.includes(dayNum)) {
         db.plan_checked = db.plan_checked.filter(d => d !== dayNum);
     } else {
@@ -556,12 +560,10 @@ function togglePlan(dayNum) {
     saveDB();
 }
 
-// 圖表渲染核心
 let myPieChart = null;
 let myBarChart = null;
 
 function renderCharts(myBal, bfBal, dBal, siteBal, mSalary, mSpend, bDep, bSpd, dDep, dSpd, sInc, sSpd) {
-    // 圓餅圖
     const ctxPie = document.getElementById('ctx-pie');
     if(ctxPie) {
         if(myPieChart) myPieChart.destroy();
@@ -578,7 +580,6 @@ function renderCharts(myBal, bfBal, dBal, siteBal, mSalary, mSpend, bDep, bSpd, 
         });
     }
 
-    // 柱狀圖計算
     let totalInc = mSalary.reduce((sum,i)=>sum+i.amount,0) + bDep.reduce((sum,i)=>sum+i.amount,0) + dDep.reduce((sum,i)=>sum+i.amount,0) + sInc.reduce((sum,i)=>sum+i.amount,0);
     let totalSpd = mSpend.reduce((sum,i)=>sum+i.amount,0) + bSpd.reduce((sum,i)=>sum+i.amount,0) + dSpd.reduce((sum,i)=>sum+i.amount,0) + sSpd.reduce((sum,i)=>sum+i.amount,0);
 
@@ -599,13 +600,12 @@ function renderCharts(myBal, bfBal, dBal, siteBal, mSalary, mSpend, bDep, bSpd, 
     }
 }
 
-// 雲端備份雲設置
 function openSettingsMenu() {
     Swal.fire({
         title: '🌌 極光星空備份中心',
         html: `
-            <input id="swal-token" type="text" class="swal2-input" placeholder="輸入 GitHub Token" value="${GITHUB_TOKEN}">
-            <input id="swal-gist" type="text" class="swal2-input" placeholder="輸入 Gist ID" value="${GITHUB_GIST_ID}">
+            <input id="swal-token" type="text" class="swal2-input" placeholder="輸入 GitHub Token" value="${localStorage.getItem('aurora_g_token') || ''}">
+            <input id="swal-gist" type="text" class="swal2-input" placeholder="輸入 Gist ID" value="${localStorage.getItem('aurora_g_gist') || ''}">
         `,
         showCancelButton: true,
         confirmButtonText: '保存並強制同步',
@@ -631,10 +631,9 @@ function syncWithCloud(isLoadForce) {
     const g = localStorage.getItem('aurora_g_gist');
     if(!t || !g) { updateUI(); return; }
 
-    document.getElementById('loading').style.display = 'flex';
+    if(document.getElementById('loading')) document.getElementById('loading').style.display = 'flex';
 
     if(isLoadForce) {
-        // 從雲端下載
         fetch(`https://api.github.com/gists/${g}`, {
             headers: { 'Authorization': `token ${t}` }
         })
@@ -642,19 +641,20 @@ function syncWithCloud(isLoadForce) {
         .then(data => {
             if(data.files && data.files['aurora_wallet.json']) {
                 let remoteData = JSON.parse(data.files['aurora_wallet.json'].content);
-                db = remoteData;
-                localStorage.setItem('aurora_wallet_v22', JSON.stringify(db));
+                if (remoteData && typeof remoteData === 'object') {
+                    db = Object.assign(db, remoteData);
+                    localStorage.setItem('aurora_wallet_v22', JSON.stringify(db));
+                }
             }
             updateUI();
-            document.getElementById('loading').style.display = 'none';
+            if(document.getElementById('loading')) document.getElementById('loading').style.display = 'none';
         })
         .catch(err => {
             console.error(err);
             updateUI();
-            document.getElementById('loading').style.display = 'none';
+            if(document.getElementById('loading')) document.getElementById('loading').style.display = 'none';
         });
     } else {
-        // 上傳到雲端
         let payload = {
             description: "Aurora Wallet Backup",
             files: { 'aurora_wallet.json': { content: JSON.stringify(db) } }
@@ -664,10 +664,10 @@ function syncWithCloud(isLoadForce) {
             headers: { 'Authorization': `token ${t}`, 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
         })
-        .then(() => { document.getElementById('loading').style.display = 'none'; })
+        .then(() => { if(document.getElementById('loading')) document.getElementById('loading').style.display = 'none'; })
         .catch(err => {
             console.error(err);
-            document.getElementById('loading').style.display = 'none';
+            if(document.getElementById('loading')) document.getElementById('loading').style.display = 'none';
         });
     }
 }
