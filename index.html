@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>我們的存摺 V22.4.0 - 基地建置版</title>
+    <title>記帳小本本</title>
     <link rel="apple-touch-icon" href="image.png">
     <link rel="icon" href="image.png">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -62,7 +62,7 @@
         .tag-post { background: var(--date-blue); }
         .tag-site { background: var(--site-orange); }
 
-        .num-input { width: 100%; padding: 15px; border-radius: 15px; border: 2px solid #eef2f5; box-sizing: border-box; margin-bottom: 8px; font-size: 1.4rem; text-align: center; outline: none; background: #fafafa; color: var(--dark-bg); font-weight: bold; }
+        .num-input { width: 100%; padding: 15px; border-radius: 15px; border: 2px solid #eef2f5; box-sizing: border-box; margin-bottom: 12px; font-size: 1.4rem; text-align: center; outline: none; background: #fafafa; color: var(--dark-bg); font-weight: bold; }
         .date-picker-input { width: 100%; padding: 10px; border-radius: 10px; border: 1px solid #eef2f5; box-sizing: border-box; margin-bottom: 12px; font-size: 0.9rem; text-align: center; outline: none; background: #ffffff; color: #555; font-weight: 500; display: block !important; visibility: visible !important; }
         .source-select-input { width: 100%; padding: 12px; border-radius: 12px; border: 2px solid #eef2f5; box-sizing: border-box; margin-bottom: 12px; font-size: 1rem; text-align-last: center; font-weight: bold; color: var(--dark-bg); outline: none; background: #ffffff; }
 
@@ -86,7 +86,8 @@
         .detail-item-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 15px; border-bottom: 1px solid #f8fafc; font-size: 0.9rem; cursor: pointer; }
         .detail-item-row:last-child { border-bottom: none; }
         
-        .site-meta-box { font-size: 0.75rem; color: #7f8c8d; margin-top: 2px; display: flex; gap: 8px; align-items: center; }
+        .item-remark-text { font-size: 0.8rem; color: #555; margin-top: 3px; font-weight: 500; background: #f1f5f9; padding: 2px 8px; border-radius: 6px; display: inline-block; }
+        .site-meta-box { font-size: 0.75rem; color: #7f8c8d; margin-top: 4px; display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
         .badge-status { padding: 1px 5px; border-radius: 4px; font-weight: bold; font-size: 0.7rem; }
         .badge-paid { background: #e6f9ed; color: var(--green); }
         .badge-unpaid { background: #fdedec; color: var(--out); }
@@ -169,8 +170,8 @@
                 <input type="number" id="my-amount" placeholder="輸入金額..." inputmode="numeric" class="num-input">
                 <input type="date" id="my-date" class="date-picker-input">
                 <div class="action-btn-grid">
-                    <button class="action-btn btn-land" onclick="doMyAction('salary')">🧧 領取本職俸祿</button>
-                    <button class="action-btn btn-out" onclick="doMyAction('spend')">💸 肆意噴錢</button>
+                    <button class="action-btn btn-land" onclick="askForRemarkAndDo('my', 'salary')">🧧 領取本職俸祿</button>
+                    <button class="action-btn btn-out" onclick="askForRemarkAndDo('my', 'spend')">💸 肆意噴錢</button>
                 </div>
             </div>
             <div class="list-section-title">🧧 本月俸祿明細 (土銀)</div>
@@ -187,8 +188,8 @@
                 <input type="number" id="bf-amount" placeholder="輸入金額..." inputmode="numeric" class="num-input">
                 <input type="date" id="bf-date" class="date-picker-input">
                 <div class="action-btn-grid">
-                    <button class="action-btn btn-pink" onclick="doBfAction('deposit')">💰 家長存入基金</button>
-                    <button class="action-btn btn-out" onclick="doBfAction('spend')">🐟 購買主罐罐罐</button>
+                    <button class="action-btn btn-pink" onclick="askForRemarkAndDo('bf', 'deposit')">💰 家長存入基金</button>
+                    <button class="action-btn btn-out" onclick="askForRemarkAndDo('bf', 'spend')">🐟 購買主罐罐罐</button>
                 </div>
             </div>
             <div class="list-section-title">💰 飼養員基金存入歷史</div>
@@ -205,8 +206,8 @@
                 <input type="number" id="date-amount" placeholder="輸入金額..." inputmode="numeric" class="num-input">
                 <input type="date" id="date-date" class="date-picker-input">
                 <div class="action-btn-grid">
-                    <button class="action-btn btn-date" onclick="doDateAction('deposit')">👛 投入公積金</button>
-                    <button class="action-btn btn-out" onclick="doDateAction('spend')">🍷 甜蜜約會支出</button>
+                    <button class="action-btn btn-date" onclick="askForRemarkAndDo('date', 'deposit')">👛 投入公積金</button>
+                    <button class="action-btn btn-out" onclick="askForRemarkAndDo('date', 'spend')">🍷 甜蜜約會支出</button>
                 </div>
             </div>
             <div class="list-section-title">👛 公積金共同存入明細</div>
@@ -237,8 +238,8 @@
 
                 <input type="date" id="site-date" class="date-picker-input">
                 <div class="action-btn-grid">
-                    <button class="action-btn btn-site" onclick="doSiteAction('income')">🏗️ 工程款項注入</button>
-                    <button class="action-btn btn-out" onclick="doSiteAction('spend')">🛠️ 材料/調度支出</button>
+                    <button class="action-btn btn-site" onclick="askForRemarkAndDo('site', 'income')">🏗️ 工程款項注入</button>
+                    <button class="action-btn btn-out" onclick="askForRemarkAndDo('site', 'spend')">🛠️ 材料/調度支出</button>
                 </div>
             </div>
             <div class="list-section-title">🏗️ 工程款注入紀錄</div>
@@ -284,25 +285,21 @@ window.onload = function() {
     initYearMonthSelects();
     initDates();
     
-    // 優先將本地快取推到網面上
     let localData = localStorage.getItem('aurora_wallet_v22');
     if(localData) {
         try { db = Object.assign(db, JSON.parse(localData)); } catch(e){}
     }
     updateUI();
     
-    // 檢查有沒有綁定基地
     let savedUrl = localStorage.getItem('aurora_gas_url');
     if(savedUrl) {
         fetchDataFromGoogleSheets();
     } else {
-        // 如果全新沒設定過，預設填入你剛才給我的這串
         localStorage.setItem('aurora_gas_url', 'https://script.google.com/macros/s/AKfycbyDWbRPZvKFjzeoSqO2Db3R1xDiomQ7P2Q-iS6gNmpJKtvWcIUzPnJc_vzjO1xLxYPD/exec');
         fetchDataFromGoogleSheets();
     }
 };
 
-// 【基地建置功能】彈出視窗
 function openBaseSettings() {
     let currentUrl = localStorage.getItem('aurora_gas_url') || '';
     Swal.fire({
@@ -463,7 +460,9 @@ function renderList(elementId, items, dbKey) {
     } else {
         items.sort((a,b) => new Date(b.date) - new Date(a.date));
         items.forEach(item => {
+            let rStr = item.remark ? `<div class="item-remark-text">💬 ${item.remark}</div>` : '';
             let noteStr = '';
+            
             if (dbKey === 'site_spend' || dbKey === 'site_income') {
                 const p = item.payer || '未指定';
                 const s = item.isPaid !== false ? '<span class="badge-status badge-paid">✅ 已付</span>' : '<span class="badge-status badge-unpaid">❌ 未付</span>';
@@ -473,6 +472,7 @@ function renderList(elementId, items, dbKey) {
                 <div class="detail-item-row" onclick="deleteItem('${dbKey}', ${item.id})">
                     <div>
                         <div style="font-weight:600; color:#333;">$ ${(item.amount||0).toLocaleString()}</div>
+                        ${rStr}
                         <div style="font-size:0.75rem; color:#999; margin-top:2px;">📅 ${item.date}</div>
                         ${noteStr}
                     </div>
@@ -532,72 +532,62 @@ function syncToGoogleSheets(actionType, dbKey, payload) {
     });
 }
 
-function doMyAction(type) {
-    let amtInput = document.getElementById('my-amount');
+// 核心修改：點擊按鈕先驗證金額，再跳出對話框問原因
+function askForRemarkAndDo(page, type) {
+    let amtInput = document.getElementById(`${page}-amount`);
     let val = parseInt(amtInput.value);
-    if(!val || val <= 0) return Swal.fire('提示', '請輸入大於0的金額！', 'warning');
-    let date = document.getElementById('my-date').value;
+    if(!val || val <= 0) return Swal.fire('提示', '請輸入大於 0 的金額！', 'warning');
     
-    let dbKey = (type === 'salary') ? 'my_salary' : 'my_spend';
-    let newItem = { id: Date.now(), amount: val, date: date };
-    
-    db[dbKey].push(newItem);
-    amtInput.value = '';
-    
-    syncToGoogleSheets('insert', dbKey, newItem);
-    Swal.fire('記帳成功', '已自動同步至 Google 試算表！', 'success');
+    let date = document.getElementById(`${page}-date`).value;
+
+    // 根據不同類型顯示適合的標題與 placeholder
+    let swalTitle = '💬 請輸入備註原因';
+    let swalPlaceholder = '例如：午餐、加油、買日用品...';
+    if(type === 'salary') { swalTitle = '🧧 請輸入俸祿摘要'; swalPlaceholder = '例如：7月份薪資...'; }
+    if(type === 'income') { swalTitle = '🏗️ 請輸入工程注入摘要'; swalPlaceholder = '例如：宏盛期款入帳...'; }
+    if(type === 'spend' && page === 'site') { swalTitle = '🛠️ 請輸入品項原因/工程款摘要'; swalPlaceholder = '例如：購買五金、水泥調度...'; }
+
+    Swal.fire({
+        title: swalTitle,
+        input: 'text',
+        inputPlaceholder: swalPlaceholder,
+        showCancelButton: true,
+        confirmButtonText: '確定儲存並同步',
+        cancelButtonText: '取消',
+        confirmButtonColor: '#0052cc'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            let remark = result.value ? result.value.trim() : '';
+            executeLedgerAction(page, type, val, date, remark);
+            amtInput.value = ''; // 清空金額輸入框
+        }
+    });
 }
 
-function doBfAction(type) {
-    let amtInput = document.getElementById('bf-amount');
-    let val = parseInt(amtInput.value);
-    if(!val || val <= 0) return Swal.fire('提示', '請輸入大於0的金額！', 'warning');
-    let date = document.getElementById('bf-date').value;
-    
-    let dbKey = (type === 'deposit') ? 'bf-deposit' : 'bf-spend';
-    let newItem = { id: Date.now(), amount: val, date: date };
-    
-    if(!db[dbKey]) db[dbKey] = [];
+function executeLedgerAction(page, type, val, date, remark) {
+    let dbKey = '';
+    let newItem = {};
+
+    if (page === 'my') {
+        dbKey = (type === 'salary') ? 'my_salary' : 'my_spend';
+        newItem = { id: Date.now(), amount: val, date: date, remark: remark };
+    } else if (page === 'bf') {
+        dbKey = (type === 'deposit') ? 'bf-deposit' : 'bf-spend';
+        newItem = { id: Date.now(), amount: val, date: date, remark: remark };
+        if(!db[dbKey]) db[dbKey] = [];
+    } else if (page === 'date') {
+        dbKey = (type === 'deposit') ? 'date_deposit' : 'date_spend';
+        newItem = { id: Date.now(), amount: val, date: date, remark: remark };
+    } else if (page === 'site') {
+        dbKey = (type === 'income') ? 'site_income' : 'site_spend';
+        let payer = document.getElementById('site-payer').value;
+        let isPaid = currentSitePaidStatus;
+        newItem = { id: Date.now(), amount: val, date: date, payer: payer, isPaid: isPaid, remark: remark };
+    }
+
     db[dbKey].push(newItem);
-    amtInput.value = '';
-    
     syncToGoogleSheets('insert', dbKey, newItem);
     Swal.fire('記帳成功', '已自動同步至 Google 試算表！', 'success');
-}
-
-function doDateAction(type) {
-    let amtInput = document.getElementById('date-amount');
-    let val = parseInt(amtInput.value);
-    if(!val || val <= 0) return Swal.fire('提示', '請輸入大於0的金額！', 'warning');
-    let date = document.getElementById('date-date').value;
-    
-    let dbKey = (type === 'deposit') ? 'date_deposit' : 'date_spend';
-    let newItem = { id: Date.now(), amount: val, date: date };
-    
-    db[dbKey].push(newItem);
-    amtInput.value = '';
-    
-    syncToGoogleSheets('insert', dbKey, newItem);
-    Swal.fire('記帳成功', '已自動同步至 Google 試算表！', 'success');
-}
-
-function doSiteAction(type) {
-    let amtInput = document.getElementById('site-amount');
-    let val = parseInt(amtInput.value);
-    if(!val || val <= 0) return Swal.fire('提示', '請輸入大於0的金額！', 'warning');
-    
-    let date = document.getElementById('site-date').value;
-    let payer = document.getElementById('site-payer').value;
-    let isPaid = currentSitePaidStatus;
-    
-    let dbKey = (type === 'income') ? 'site_income' : 'site_spend';
-    let newItem = { id: Date.now(), amount: val, date: date, payer: payer, isPaid: isPaid };
-    
-    db[dbKey].push(newItem);
-    amtInput.value = '';
-    
-    syncToGoogleSheets('insert', dbKey, newItem);
-    Swal.fire('記帳成功', `已同步至工地試算表（付款人：${payer}）`, 'success');
 }
 
 function deleteItem(dbKey, id) {
@@ -676,7 +666,7 @@ function renderCharts(myBal, bfBal, dBal, siteBal, mSalary, mSpend, bDep, bSpd, 
     }
 
     let totalInc = mSalary.reduce((sum,i)=>sum+i.amount,0) + bDep.reduce((sum,i)=>sum+i.amount,0) + dDep.reduce((sum,i)=>sum+i.amount,0) + sInc.reduce((sum,i)=>sum+i.amount,0);
-    let totalSpd = mSpend.reduce((sum,i)=>sum+i.amount,0) + bSpd.reduce((sum,i)=>sum+i.amount,0) + dSpd.reduce((sum,i)=>sum+i.amount,0) + sSpd.reduce((sum,i)=>sum+i.amount,0);
+    let totalSpd = mSpend.reduce((sum,i)=>sum+i.amount,0) + bSpd.reduce((sum,i)=>sum+i.amount,0) + bSpd.reduce((sum,i)=>sum+i.amount,0) + sSpd.reduce((sum,i)=>sum+i.amount,0);
 
     const ctxBar = document.getElementById('ctx-bar');
     if(ctxBar) {
