@@ -76,6 +76,7 @@
         .action-btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         .action-btn { border: none; padding: 14px; border-radius: 15px; font-weight: bold; color: white; cursor: pointer; font-size: 0.95rem; display: flex; align-items: center; justify-content: center; gap: 5px; transition: opacity 0.2s; }
         .action-btn:active { opacity: 0.8; }
+        .action-btn-full { grid-column: span 2; }
         
         .btn-land { background: var(--land-blue); }
         .btn-out { background: var(--out); }
@@ -111,6 +112,7 @@
 <body>
 
 <div class="app-container">
+    <!-- 頂部面板 (三組餘額) -->
     <div class="top-header">
         <div class="header-title-bar">
             <div class="header-title">我們的存摺</div>
@@ -124,6 +126,7 @@
             </div>
         </div>
         
+        <!-- 上排：阿毛與工地 -->
         <div class="top-summary-grid">
             <div>
                 <div class="summary-item">👤 阿毛餘額</div>
@@ -135,12 +138,14 @@
             </div>
         </div>
         
+        <!-- 下排：飼養基金 -->
         <div class="top-summary-full">
             <div class="summary-item">🐱 飼養基金餘額</div>
             <div class="summary-val pink-text" id="top-bf-balance">$ 0</div>
         </div>
     </div>
 
+    <!-- 六大功能分頁鈕 -->
     <div class="nav-tab-container">
         <button class="nav-tab active" onclick="switchPage('page-my-ledger', event)">
             <div class="nav-tab-icon" style="color: var(--land-blue);">📋</div>
@@ -170,6 +175,7 @@
 
     <div class="content-box">
         
+        <!-- 分頁一：阿毛帳本 -->
         <div id="page-my-ledger" class="page active">
             <div class="main-card">
                 <span class="bank-tag tag-land">🏦 土地銀行</span>
@@ -188,6 +194,7 @@
             <div class="detail-list-wrapper" id="my-spend-list"></div>
         </div>
 
+        <!-- 分頁二：阿毛飼養員 -->
         <div id="page-bf-feed" class="page">
             <div class="main-card" style="background: #fffbfb; border: 1px solid #ffe3e7;">
                 <span class="bank-tag tag-cathay">🌳 國泰世華</span>
@@ -206,24 +213,30 @@
             <div class="detail-list-wrapper" id="bf-spend-list"></div>
         </div>
 
+        <!-- 分頁三：約會記帳 (全新約會支出扣款功能) -->
         <div id="page-date-ledger" class="page">
             <div class="main-card">
-                <span class="bank-tag tag-post">📮 郵局存款</span>
-                <div class="card-mini-title">🌹 約會公積金</div>
+                <span class="bank-tag tag-post">📮 約會扣款</span>
+                <div class="card-mini-title">🌹 本月約會支出累計</div>
                 <div class="card-big-amount" id="date-balance-display" style="color: var(--date-blue);">$ 0</div>
                 <input type="number" id="date-amount" placeholder="輸入金額..." inputmode="numeric" class="num-input">
+                
+                <!-- 選擇約會金額要扣除哪一個帳本 -->
+                <select id="date-deduct-source" class="source-select-input">
+                    <option value="my">💼 扣除：阿毛帳本 (土銀)</option>
+                    <option value="bf">🐱 扣除：飼養基金 (國泰)</option>
+                </select>
+
                 <input type="date" id="date-date" class="date-picker-input">
                 <div class="action-btn-grid">
-                    <button class="action-btn btn-date" onclick="askForRemarkAndDo('date', 'deposit')">👛 投入公積金</button>
-                    <button class="action-btn btn-out" onclick="askForRemarkAndDo('date', 'spend')">🍷 甜蜜約會支出</button>
+                    <button class="action-btn btn-date action-btn-full" onclick="askForRemarkAndDo('date', 'spend')">🍷 記一筆約會支出</button>
                 </div>
             </div>
-            <div class="list-section-title">👛 公積金共同存入明細</div>
-            <div class="detail-list-wrapper" id="date-deposit-list"></div>
-            <div class="list-section-title">🍷 甜蜜約會支出明細</div>
+            <div class="list-section-title">🍷 本月約會支出明細</div>
             <div class="detail-list-wrapper" id="date-spend-list"></div>
         </div>
 
+        <!-- 分頁四：工地帳本 -->
         <div id="page-site-ledger" class="page">
             <div class="main-card">
                 <span class="bank-tag tag-site">👷 工地款項</span>
@@ -256,6 +269,7 @@
             <div class="detail-list-wrapper" id="site-spend-list"></div>
         </div>
 
+        <!-- 分頁五：存錢計畫 -->
         <div id="page-saving-plan" class="page">
             <div class="main-card">
                 <div class="card-mini-title">🐷 365天階梯存錢累計</div>
@@ -264,6 +278,7 @@
             </div>
         </div>
 
+        <!-- 分頁六：數據統計 -->
         <div id="page-charts" class="page">
             <div class="chart-box">
                 <div style="font-size:0.85rem; font-weight:bold; margin-bottom:10px;">📊 各帳本金流分配圖</div>
@@ -423,38 +438,38 @@ function updateUI() {
     // 1. 阿毛帳本
     let mSalary = filterByYM(db.my_salary);
     let mSpend = filterByYM(db.my_spend);
-    let myBal = mSalary.reduce((sum, i) => sum + (i.amount||0), 0) - mSpend.reduce((sum, i) => sum + (i.amount||0), 0);
-    if(document.getElementById('my-balance-display')) document.getElementById('my-balance-display').innerText = "$ " + myBal.toLocaleString();
-    if(document.getElementById('top-my-balance')) document.getElementById('top-my-balance').innerText = "$ " + myBal.toLocaleString();
+    let myBal = mSalary.reduce((sum, i) => sum + Math.abs(i.amount||0), 0) - mSpend.reduce((sum, i) => sum + Math.abs(i.amount||0), 0);
+    if(document.getElementById('my-balance-display')) document.getElementById('my-balance-display').innerText = "$ " + Math.abs(myBal).toLocaleString();
+    if(document.getElementById('top-my-balance')) document.getElementById('top-my-balance').innerText = "$ " + Math.abs(myBal).toLocaleString();
     renderList('my-salary-list', mSalary, 'my_salary');
     renderList('my-spend-list', mSpend, 'my_spend');
 
     // 2. 阿毛飼養員
     let bDep = filterByYM(db['bf-deposit'] || db.bf_deposit);
     let bSpd = filterByYM(db['bf-spend'] || db.bf_spend);
-    let bfBal = bDep.reduce((sum, i) => sum + (i.amount||0), 0) - bSpd.reduce((sum, i) => sum + (i.amount||0), 0);
-    if(document.getElementById('bf-balance-display')) document.getElementById('bf-balance-display').innerText = "$ " + bfBal.toLocaleString();
-    if(document.getElementById('top-bf-balance')) document.getElementById('top-bf-balance').innerText = "$ " + bfBal.toLocaleString();
+    let bfBal = bDep.reduce((sum, i) => sum + Math.abs(i.amount||0), 0) - bSpd.reduce((sum, i) => sum + Math.abs(i.amount||0), 0);
+    if(document.getElementById('bf-balance-display')) document.getElementById('bf-balance-display').innerText = "$ " + Math.abs(bfBal).toLocaleString();
+    if(document.getElementById('top-bf-balance')) document.getElementById('top-bf-balance').innerText = "$ " + Math.abs(bfBal).toLocaleString();
     renderList('bf-deposit-list', bDep, 'bf-deposit');
     renderList('bf-spend-list', bSpd, 'bf-spend');
 
-    // 3. 約會帳本
-    let dDep = filterByYM(db.date_deposit);
+    // 3. 約會帳本 (純累計支出)
     let dSpd = filterByYM(db.date_spend);
-    let dBal = dDep.reduce((sum, i) => sum + (i.amount||0), 0) - dSpd.reduce((sum, i) => sum + (i.amount||0), 0);
+    let dBal = dSpd.reduce((sum, i) => sum + Math.abs(i.amount||0), 0);
     if(document.getElementById('date-balance-display')) document.getElementById('date-balance-display').innerText = "$ " + dBal.toLocaleString();
+    renderList('date-spend-list', dSpd, 'date_spend');
 
     // 4. 工地帳本
     let sInc = filterByYM(db.site_income);
     let sSpd = filterByYM(db.site_spend);
-    let siteBal = sInc.reduce((sum, i) => sum + (i.amount||0), 0) - sSpd.reduce((sum, i) => sum + (i.amount||0), 0);
-    if(document.getElementById('site-balance-display')) document.getElementById('site-balance-display').innerText = "$ " + siteBal.toLocaleString();
-    if(document.getElementById('top-site-balance')) document.getElementById('top-site-balance').innerText = "$ " + siteBal.toLocaleString();
+    let siteBal = sInc.reduce((sum, i) => sum + Math.abs(i.amount||0), 0) - sSpd.reduce((sum, i) => sum + Math.abs(i.amount||0), 0);
+    if(document.getElementById('site-balance-display')) document.getElementById('site-balance-display').innerText = "$ " + Math.abs(siteBal).toLocaleString();
+    if(document.getElementById('top-site-balance')) document.getElementById('top-site-balance').innerText = "$ " + Math.abs(siteBal).toLocaleString();
     renderList('site-income-list', sInc, 'site_income');
     renderList('site-spend-list', sSpd, 'site_spend');
 
     renderSavingPlan();
-    renderCharts(myBal, bfBal, dBal, siteBal, mSalary, mSpend, bDep, bSpd, dDep, dSpd, sInc, sSpd);
+    renderCharts(myBal, bfBal, dBal, siteBal, mSalary, mSpend, bDep, bSpd, dSpd, sInc, sSpd);
 }
 
 function renderList(elementId, items, dbKey) {
@@ -475,10 +490,12 @@ function renderList(elementId, items, dbKey) {
                 const s = item.isPaid !== false ? '<span class="badge-status badge-paid">✅ 已付</span>' : '<span class="badge-status badge-unpaid">❌ 未付</span>';
                 noteStr = `<div class="site-meta-box">👤 付款人: ${p} ｜ ${s}</div>`;
             }
+            // 強制呈現絕對值正數金額
+            let displayAmt = Math.abs(item.amount || 0);
             html += `
                 <div class="detail-item-row" onclick="deleteItem('${dbKey}', ${item.id})">
                     <div>
-                        <div style="font-weight:600; color:#333;">$ ${(item.amount||0).toLocaleString()}</div>
+                        <div style="font-weight:600; color:#333;">$ ${displayAmt.toLocaleString()}</div>
                         ${rStr}
                         <div style="font-size:0.75rem; color:#999; margin-top:2px;">📅 ${item.date}</div>
                         ${noteStr}
@@ -547,7 +564,7 @@ function askForRemarkAndDo(page, type) {
     let date = document.getElementById(`${page}-date`).value;
 
     let swalTitle = '💬 請輸入備註原因';
-    let swalPlaceholder = '例如：午餐、加油、買日用品...';
+    let swalPlaceholder = '例如：晚餐、看電影、遊樂園...';
     if(type === 'salary') { swalTitle = '🧧 請輸入俸祿摘要'; swalPlaceholder = '例如：7月份薪資...'; }
     if(type === 'income') { swalTitle = '🏗️ 請輸入工程注入摘要'; swalPlaceholder = '例如：宏盛期款入帳...'; }
     if(type === 'spend' && page === 'site') { swalTitle = '🛠️ 請輸入品項原因/工程款摘要'; swalPlaceholder = '例如：購買五金、水泥調度...'; }
@@ -572,32 +589,59 @@ function askForRemarkAndDo(page, type) {
 function executeLedgerAction(page, type, val, date, remark) {
     let dbKey = '';
     let newItem = {};
+    
+    // 金額一律儲存為「正數」絕對值
+    const absVal = Math.abs(val);
 
     if (page === 'my') {
         dbKey = (type === 'salary') ? 'my_salary' : 'my_spend';
-        newItem = { id: Date.now(), amount: val, date: date, remark: remark };
+        newItem = { id: Date.now(), amount: absVal, date: date, remark: remark };
+        db[dbKey].push(newItem);
+        syncToGoogleSheets('insert', dbKey, newItem);
     } else if (page === 'bf') {
         dbKey = (type === 'deposit') ? 'bf-deposit' : 'bf-spend';
-        newItem = { id: Date.now(), amount: val, date: date, remark: remark };
+        newItem = { id: Date.now(), amount: absVal, date: date, remark: remark };
         if(!db[dbKey]) db[dbKey] = [];
-    } else if (page === 'date') {
-        dbKey = (type === 'deposit') ? 'date_deposit' : 'date_spend';
-        newItem = { id: Date.now(), amount: val, date: date, remark: remark };
+        db[dbKey].push(newItem);
+        syncToGoogleSheets('insert', dbKey, newItem);
     } else if (page === 'site') {
         dbKey = (type === 'income') ? 'site_income' : 'site_spend';
         let payer = document.getElementById('site-payer').value;
         let isPaid = currentSitePaidStatus;
-        newItem = { id: Date.now(), amount: val, date: date, payer: payer, isPaid: isPaid, remark: remark };
+        newItem = { id: Date.now(), amount: absVal, date: date, payer: payer, isPaid: isPaid, remark: remark };
+        db[dbKey].push(newItem);
+        syncToGoogleSheets('insert', dbKey, newItem);
+    } else if (page === 'date') {
+        // 約會記帳：記錄支出並聯動扣除指定帳本
+        let deductSource = document.getElementById('date-deduct-source').value; // 'my' 或 'bf'
+        let sharedId = Date.now();
+        
+        // 1. 新增約會支出明細
+        dbKey = 'date_spend';
+        let dateRemark = remark ? `[約會支出] ${remark}` : '[約會支出]';
+        newItem = { id: sharedId, amount: absVal, date: date, remark: remark, source: deductSource };
+        db[dbKey].push(newItem);
+        syncToGoogleSheets('insert', dbKey, newItem);
+
+        // 2. 同步寫入對應被扣款帳本的支出 (阿毛帳本或飼養員帳本)
+        let linkedKey = (deductSource === 'my') ? 'my_spend' : 'bf-spend';
+        let linkedItem = { id: sharedId, amount: absVal, date: date, remark: dateRemark, isDateLink: true };
+        
+        if(!db[linkedKey]) db[linkedKey] = [];
+        db[linkedKey].push(linkedItem);
+        // 使用延遲以防止同時間打API打架
+        setTimeout(() => {
+            syncToGoogleSheets('insert', linkedKey, linkedItem);
+        }, 300);
     }
 
-    db[dbKey].push(newItem);
-    syncToGoogleSheets('insert', dbKey, newItem);
     Swal.fire('記帳成功', '已自動同步至 Google 試算表！', 'success');
 }
 
 function deleteItem(dbKey, id) {
     Swal.fire({
         title: '要從雲端試算表刪除這筆帳目嗎？',
+        text: '如果是約會記帳支出，系統會一併刪除聯動扣款帳本裡的項目喔！',
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#e74c3c',
@@ -605,6 +649,27 @@ function deleteItem(dbKey, id) {
         confirmButtonText: '是的，刪除！'
     }).then((result) => {
         if (result.isConfirmed) {
+            // 如果刪除的是約會支出，一併刪除當初關聯的被扣款帳本支出
+            if(dbKey === 'date_spend') {
+                let targetItem = db.date_spend.find(i => i.id === id);
+                if(targetItem) {
+                    let deductSource = targetItem.source || 'my';
+                    let linkedKey = (deductSource === 'my') ? 'my_spend' : 'bf-spend';
+                    db[linkedKey] = db[linkedKey].filter(i => i.id !== id);
+                    syncToGoogleSheets('delete', linkedKey, { id: id });
+                }
+            }
+            
+            // 如果刪除的是阿毛或飼養員，且該項目是從約會產生的，也要逆向刪除約會那邊
+            if(dbKey === 'my_spend' || dbKey === 'bf-spend' || dbKey === 'bf_spend') {
+                let actualKey = dbKey === 'bf_spend' ? 'bf-spend' : dbKey;
+                let targetItem = db[actualKey].find(i => i.id === id);
+                if(targetItem && targetItem.isDateLink) {
+                    db.date_spend = db.date_spend.filter(i => i.id !== id);
+                    syncToGoogleSheets('delete', 'date_spend', { id: id });
+                }
+            }
+
             db[dbKey] = db[dbKey].filter(i => i.id !== id);
             syncToGoogleSheets('delete', dbKey, { id: id });
         }
@@ -653,14 +718,14 @@ function togglePlan(dayNum) {
 let myPieChart = null;
 let myBarChart = null;
 
-function renderCharts(myBal, bfBal, dBal, siteBal, mSalary, mSpend, bDep, bSpd, dDep, dSpd, sInc, sSpd) {
+function renderCharts(myBal, bfBal, dBal, siteBal, mSalary, mSpend, bDep, bSpd, dSpd, sInc, sSpd) {
     const ctxPie = document.getElementById('ctx-pie');
     if(ctxPie) {
         if(myPieChart) myPieChart.destroy();
         myPieChart = new Chart(ctxPie, {
             type: 'pie',
             data: {
-                labels: ['阿毛帳本', '阿毛飼養員', '約會公積金', '工地帳本'],
+                labels: ['阿毛帳本', '阿毛飼養員', '本月約會累計', '工地帳本'],
                 datasets: [{
                     data: [Math.max(0, myBal), Math.max(0, bfBal), Math.max(0, dBal), Math.max(0, siteBal)],
                     backgroundColor: ['#0052cc', '#ff8da1', '#38b6ff', '#f39c12']
@@ -670,8 +735,8 @@ function renderCharts(myBal, bfBal, dBal, siteBal, mSalary, mSpend, bDep, bSpd, 
         });
     }
 
-    let totalInc = mSalary.reduce((sum,i)=>sum+i.amount,0) + bDep.reduce((sum,i)=>sum+i.amount,0) + dDep.reduce((sum,i)=>sum+i.amount,0) + sInc.reduce((sum,i)=>sum+i.amount,0);
-    let totalSpd = mSpend.reduce((sum,i)=>sum+i.amount,0) + bSpd.reduce((sum,i)=>sum+i.amount,0) + bSpd.reduce((sum,i)=>sum+i.amount,0) + sSpd.reduce((sum,i)=>sum+i.amount,0);
+    let totalInc = mSalary.reduce((sum,i)=>sum+Math.abs(i.amount),0) + bDep.reduce((sum,i)=>sum+Math.abs(i.amount),0) + sInc.reduce((sum,i)=>sum+Math.abs(i.amount),0);
+    let totalSpd = mSpend.reduce((sum,i)=>sum+Math.abs(i.amount),0) + bSpd.reduce((sum,i)=>sum+Math.abs(i.amount),0) + dSpd.reduce((sum,i)=>sum+Math.abs(i.amount),0) + sSpd.reduce((sum,i)=>sum+Math.abs(i.amount),0);
 
     const ctxBar = document.getElementById('ctx-bar');
     if(ctxBar) {
