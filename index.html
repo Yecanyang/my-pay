@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>我們的存摺 V18.7.0 - 約會聯動版</title>
+    <title>記帳小本本</title>
     <link rel="apple-touch-icon" href="image.png">
     <link rel="icon" href="image.png">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -87,6 +87,9 @@
         .dropdown-selects select option { color: black; }
         
         .loading-mask { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(18,18,18,0.8); display: none; align-items: center; justify-content: center; z-index: 10000; font-weight: bold; color: white; font-size: 1.1rem; }
+        
+        .chart-box { background: var(--card-bg); border-radius: 20px; padding: 15px; margin-bottom: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.02); }
+        .chart-title { font-size: 0.85rem; font-weight: bold; color: #555; margin-bottom: 10px; text-align: left; padding-left: 5px; }
     </style>
 </head>
 <body>
@@ -151,8 +154,8 @@
                 <input type="number" id="my-amount" placeholder="輸入金額..." inputmode="numeric" class="num-input">
                 <input type="date" id="my-date" class="date-picker-input">
                 <div class="action-btn-grid">
-                    <button class="action-btn btn-land btn-span-2" onclick="doMyAction('salary')">🧧 領取本職俸祿 (入土銀)</button>
-                    <button class="action-btn btn-out btn-span-2" onclick="doMyAction('spend')">💸 肆意噴錢 (土銀日常出帳)</button>
+                    <button class="action-btn btn-land" onclick="doMyAction('salary')">🧧 領取本職俸祿</button>
+                    <button class="action-btn btn-out" onclick="doMyAction('spend')">💸 肆意噴錢</button>
                 </div>
             </div>
             <div class="list-section-title">🧧 本月俸祿明細 (土銀)</div>
@@ -163,7 +166,7 @@
 
         <!-- 分頁二：阿毛飼養員 -->
         <div id="page-bf-feed" class="page">
-            <div class="main-card" style="background: #fffbfb; border: 1px solid #ffe3e7; padding-top: 35px;">
+            <div class="main-card" style="background: #fffbfb; border: 1px solid #ffe3e7;">
                 <span class="bank-tag tag-cathay">🌳 國泰世華</span>
                 <div style="background: linear-gradient(135deg, #fff5f6, #fff0f2); border-radius: 12px; padding: 8px; margin-bottom: 15px; font-size: 0.85rem; font-weight: bold; color: #e0526c; border: 1px dashed #ffa6b5;">
                     🐾 阿毛的頂級貓罐罐基金：<span id="cat-can-total" style="font-size: 1.1rem; color: #ff4766;">$ 0</span>
@@ -173,7 +176,7 @@
                 <input type="number" id="bf-amount" placeholder="輸入金額..." inputmode="numeric" class="num-input">
                 <input type="date" id="bf-date" class="date-picker-input">
                 <div class="action-btn-grid">
-                    <button class="action-btn btn-pink" onclick="doBfIncome()">💰 飼養員進貢零用錢</button>
+                    <button class="action-btn btn-pink" onclick="doBfIncome()">💰 飼養員進貢</button>
                     <button class="action-btn btn-out" onclick="doBfSpend()">🛍️ 爽花零用錢</button>
                     <button class="action-btn btn-premium btn-span-2" onclick="doSaveCatCan()">🐾 存成頂級貓罐罐 (鎖定儲蓄)</button>
                 </div>
@@ -193,7 +196,6 @@
                 <div class="card-mini-title" style="color: #1a8ccb;">🌹 本月甜蜜約會總開銷</div>
                 <div class="card-big-amount" id="date-spend-display" style="color: var(--date-blue);">$ 0</div>
                 
-                <!-- 跨帳本聯動選擇器 -->
                 <div class="card-mini-title" style="margin-bottom: 2px;">💳 請選擇扣款資金來源：</div>
                 <select id="date-source-select" class="source-select-input">
                     <option value="post">📮 中華郵局 (預設獨立約會錢)</option>
@@ -226,10 +228,22 @@
 
         <!-- 分頁五：數據統計 -->
         <div id="page-charts" class="page">
-            <div class="main-card">
-                <div class="card-mini-title">本月全金庫支出名目分析</div>
-                <canvas id="outPieChart" style="max-height: 180px; margin-top: 10px;"></canvas>
+            <!-- 統計圖一 -->
+            <div class="chart-box">
+                <div class="chart-title">📋 本月阿毛日常支出統計 (土銀)</div>
+                <canvas id="mySpendChart" style="max-height: 160px;"></canvas>
             </div>
+            <!-- 統計圖二 -->
+            <div class="chart-box">
+                <div class="chart-title">🎁 本月飼料與零用錢消費統計 (國泰)</div>
+                <canvas id="bfSpendChart" style="max-height: 160px;"></canvas>
+            </div>
+            <!-- 統計圖三 -->
+            <div class="chart-box">
+                <div class="chart-title">🌹 本月約會開銷統計 (聯動總表)</div>
+                <canvas id="dateSpendChart" style="max-height: 160px;"></canvas>
+            </div>
+
             <div class="list-section-title">📜 本月充公存錢紀錄</div>
             <div class="detail-list-wrapper" id="my-saved-list"></div>
         </div>
@@ -239,8 +253,12 @@
 
 <script>
     let WEB_APP_URL = localStorage.getItem('user_gas_url') || "";
-    let db = { total: 0, monthlyGoal: 5000, years: {}, categories: ["伙食", "交通", "娛樂", "購物", "其他"] };
-    let outPieChart = null;
+    let db = { total: 0, monthlyGoal: 5000, years: {} };
+    
+    // 圖表實例儲存
+    let chartMy = null;
+    let chartBf = null;
+    let chartDate = null;
 
     const sy = document.getElementById('sel-year');
     const sm = document.getElementById('sel-month');
@@ -269,12 +287,11 @@
     function getMByArgs(y, m) {
         if(!db.years) db.years = {};
         if(!db.years[y]) db.years[y] = { months: {} };
-        if(!db.years[y].months[m]) db.years[y].months[m] = { salary:0, out:0, saved:0, outDetails:{}, savedDetails:[], salaryDetails:[] };
+        if(!db.years[y].months[m]) db.years[y].months[m] = { salary:0, out:0, saved:0, savedDetails:[], salaryDetails:[] };
         const data = db.years[y].months[m];
         data.salary = safeNum(data.salary);
         data.out = safeNum(data.out);
         data.saved = safeNum(data.saved);
-        if(!data.outDetails) data.outDetails = {};
         if(!data.savedDetails) data.savedDetails = [];
         if(!data.salaryDetails) data.salaryDetails = [];
         
@@ -295,12 +312,11 @@
     function getMByTargetDate(dateStr) {
         if(!dateStr) return getM();
         const parts = dateStr.split('-');
-        if(parts.length === 3) {
-            return getMByArgs(parts[0], parseInt(parts[1]));
-        }
+        if(parts.length === 3) return getMByArgs(parts[0], parseInt(parts[1]));
         return getM();
     }
 
+    // 阿毛帳本直接輸入備註
     async function doMyAction(type) {
         const amtInput = document.getElementById('my-amount');
         const dateInput = document.getElementById('my-date');
@@ -311,28 +327,29 @@
         const mData = getMByTargetDate(targetDate);
         const displayDate = formatShortDate(targetDate);
 
+        const { value: note } = await Swal.fire({
+            title: type === 'salary' ? '請輸入收入備註' : (type === 'force_save' ? '請輸入充公備註' : '請輸入支出備註'),
+            input: 'text',
+            inputPlaceholder: '例如：薪水、買衣服、晚餐...',
+            showCancelButton: true
+        });
+        if(note === null) return;
+        let finalNote = note.trim() || (type === 'salary' ? "俸祿收入" : (type === 'force_save' ? "強制充公" : "日常支出"));
+
         if(type === 'salary') {
             db.total = safeNum(db.total) + amt;
             mData.salary += amt;
-            mData.salaryDetails.push({amt: amt, date: displayDate});
+            mData.salaryDetails.push({amt: amt, note: finalNote, date: displayDate});
         } else if(type === 'spend') {
-            const { value: cat } = await Swal.fire({
-                title: '選擇支出名目 (土銀出帳)',
-                input: 'select',
-                inputOptions: db.categories.reduce((a,v)=>{a[v]=v;return a;},{}),
-                showCancelButton: true
-            });
-            if(!cat) return;
             db.total = safeNum(db.total) - amt;
             mData.out += amt;
-            mData.outDetails[cat] = safeNum(mData.outDetails[cat]) + amt;
             if(!mData.mySpendDetails) mData.mySpendDetails = [];
-            mData.mySpendDetails.push({ amt: amt, cat: cat, date: displayDate });
+            mData.mySpendDetails.push({ amt: amt, cat: finalNote, date: displayDate });
         } else if(type === 'force_save') {
-            if(safeNum(db.total) < amt) return Swal.fire("土地銀行餘額不足", "沒錢充公啦阿毛！", "error");
+            if(safeNum(db.total) < amt) return Swal.fire("土地銀行餘額不足", "沒錢充公啦！", "error");
             db.total = safeNum(db.total) - amt;
             mData.saved += amt;
-            mData.savedDetails.push({amt: amt, date: displayDate});
+            mData.savedDetails.push({amt: amt, note: finalNote, date: displayDate});
         }
 
         amtInput.value = '';
@@ -347,12 +364,12 @@
         if(res.isConfirmed) {
             db.total = safeNum(db.total) + safeNum(item.amt);
             mData.out = safeNum(mData.out) - safeNum(item.amt);
-            mData.outDetails[item.cat] = safeNum(mData.outDetails[item.cat]) - safeNum(item.amt);
             mData.mySpendDetails.splice(idx, 1);
             syncData('push');
         }
     }
 
+    // 飼養員進貢直接輸入備註
     async function doBfIncome() {
         const amtInput = document.getElementById('bf-amount');
         const dateInput = document.getElementById('bf-date');
@@ -363,15 +380,24 @@
         const mData = getMByTargetDate(targetDate);
         const displayDate = formatShortDate(targetDate);
 
+        const { value: note } = await Swal.fire({
+            title: '請輸入進貢備註',
+            input: 'text',
+            inputPlaceholder: '例如：本月零用錢、表現良好獎勵...',
+            showCancelButton: true
+        });
+        if(note === null) return;
+        let finalNote = note.trim() || "飼養員進貢";
+
         mData.bfFundTotal = safeNum(mData.bfFundTotal) + amt;
-        mData.bfIncomeDetails.push({ amt: amt, date: displayDate });
+        mData.bfIncomeDetails.push({ amt: amt, note: finalNote, date: displayDate });
         
-        Swal.fire("進貢成功", `大狗勾飼養員已成功上繳 $${amt} 零用錢！`, "success");
         amtInput.value = '';
         initDatePickers();
         syncData('push');
     }
 
+    // 飼養員支出直接輸入備註
     async function doBfSpend() {
         const amtInput = document.getElementById('bf-amount');
         const dateInput = document.getElementById('bf-date');
@@ -383,21 +409,21 @@
         const displayDate = formatShortDate(targetDate);
 
         if(safeNum(mData.bfFundTotal) < amt) {
-            return Swal.fire("零用錢餘額不足", "零用錢花光啦！快喵喵叫提醒飼養員！", "error");
+            return Swal.fire("零用錢餘額不足", "零用錢花光啦！", "error");
         }
 
-        const { value: cat } = await Swal.fire({
-            title: '零用錢花去哪了？(選擇名目)',
-            input: 'select',
-            inputOptions: db.categories.reduce((a,v)=>{a[v]=v;return a;},{}),
+        const { value: note } = await Swal.fire({
+            title: '請輸入零用錢消費項目',
+            input: 'text',
+            inputPlaceholder: '例如：買包包、喝飲料...',
             showCancelButton: true
         });
-        if(!cat) return;
+        if(note === null) return;
+        let finalNote = note.trim() || "零用錢消費";
 
         mData.bfFundTotal = safeNum(mData.bfFundTotal) - amt;
-        mData.bfSpendDetails.push({ amt: amt, note: cat, date: displayDate });
+        mData.bfSpendDetails.push({ amt: amt, note: finalNote, date: displayDate });
         mData.out += amt;
-        mData.outDetails[`🎁 ${cat}`] = safeNum(mData.outDetails[`🎁 ${cat}`]) + amt;
 
         amtInput.value = '';
         initDatePickers();
@@ -415,20 +441,20 @@
         const displayDate = formatShortDate(targetDate);
 
         if(safeNum(mData.bfFundTotal) < amt) {
-            return Swal.fire("可用零用錢不足", "沒有足夠的餘額可以變成罐罐喔！", "error");
+            return Swal.fire("可用零用錢不足", "不夠錢買罐罐喔！", "error");
         }
 
         mData.bfFundTotal = safeNum(mData.bfFundTotal) - amt;
         mData.catCanTotal = safeNum(mData.catCanTotal) + amt;
         mData.catCanDetails.push({ amt: amt, date: displayDate });
 
-        Swal.fire("成功存入罐罐", `已成功將 $${amt} 轉化為阿毛的頂級貓罐罐儲蓄！🐾`, "success");
+        Swal.fire("成功存入罐罐", `已存入頂級貓罐罐儲蓄！🐾`, "success");
         amtInput.value = '';
         initDatePickers();
         syncData('push');
     }
 
-    // 約會聯動核心功能
+    // 約會記帳直接輸入
     async function doDateSpend() {
         const amtInput = document.getElementById('date-amount');
         const dateInput = document.getElementById('date-date');
@@ -442,7 +468,6 @@
         const displayDate = formatShortDate(targetDate);
         const source = sourceSelect.value;
 
-        // 檢查各帳本的餘額是否足夠
         if (source === 'land' && safeNum(db.total) < amt) {
             return Swal.fire("土地銀行餘額不足", "阿毛帳本餘額不夠付這次約會喔！", "error");
         }
@@ -459,35 +484,31 @@
         if(note === null) return;
         let finalNote = note.trim() || "甜蜜約會行程";
 
-        // 根據不同扣款來源進行聯動扣款與記錄
         let sourceTag = "";
         if (source === 'post') {
-            sourceTag = "📮郵局";
-            // 獨立約會帳本，只加總開銷
+            sourceTag = "郵局";
         } else if (source === 'land') {
-            sourceTag = "🏦土銀扣款";
+            sourceTag = "土銀扣款";
             db.total = safeNum(db.total) - amt;
             if(!mData.mySpendDetails) mData.mySpendDetails = [];
-            mData.mySpendDetails.push({ amt: amt, cat: "約會開銷", date: displayDate });
+            mData.mySpendDetails.push({ amt: amt, cat: `約會-${finalNote}`, date: displayDate });
         } else if (source === 'cathay') {
-            sourceTag = "🎁零用錢扣款";
+            sourceTag = "零用錢扣款";
             mData.bfFundTotal = safeNum(mData.bfFundTotal) - amt;
             if(!mData.bfSpendDetails) mData.bfSpendDetails = [];
             mData.bfSpendDetails.push({ amt: amt, note: `約會-${finalNote}`, date: displayDate });
         }
 
-        // 把紀錄塞進約會總表
         mData.dateTotalSpend = safeNum(mData.dateTotalSpend) + amt;
         mData.dateSpendDetails.push({ 
             amt: amt, 
             note: `[${sourceTag}] ${finalNote}`, 
+            rawNote: finalNote,
             date: displayDate,
-            fromSource: source // 紀錄來源以便後續撤銷
+            fromSource: source
         });
 
-        // 計入總名目統計
         mData.out += amt;
-        mData.outDetails["🌹 約會開銷"] = safeNum(mData.outDetails["🌹 約會開銷"]) + amt;
 
         Swal.fire("約會記帳成功", `金額 $${amt} 已成功從【${sourceTag}】聯動扣除！`, "success");
         amtInput.value = '';
@@ -495,40 +516,56 @@
         syncData('push');
     }
 
-    // 撤銷約會明細時，要把錢還回原本聯動的帳本
     async function delDateSpend(idx) {
         const mData = getM();
         const item = mData.dateSpendDetails[idx];
         const res = await Swal.fire({ title: '撤銷此筆約會支出？', text: `${item.note} $${safeNum(item.amt)}`, showCancelButton: true });
         
         if(res.isConfirmed) {
-            const source = item.fromSource || 'post'; // 如果舊資料沒寫，預設為 post
+            const source = item.fromSource || 'post';
 
-            // 退款聯動
             if (source === 'land') {
                 db.total = safeNum(db.total) + safeNum(item.amt);
-                // 尋找阿毛帳本裡當天且金額相同的約會紀錄並刪除
                 if (mData.mySpendDetails) {
-                    const fIdx = mData.mySpendDetails.findIndex(x => x.amt === item.amt && x.cat === "約會開銷");
+                    const fIdx = mData.mySpendDetails.findIndex(x => x.amt === item.amt && x.cat === `約會-${item.rawNote || ''}`);
                     if (fIdx !== -1) mData.mySpendDetails.splice(fIdx, 1);
                 }
             } else if (source === 'cathay') {
                 mData.bfFundTotal = safeNum(mData.bfFundTotal) + safeNum(item.amt);
-                // 尋找飼養員帳本裡對應的紀錄並刪除
                 if (mData.bfSpendDetails) {
-                    const fIdx = mData.bfSpendDetails.findIndex(x => x.amt === item.amt && x.note.startsWith("約會-"));
+                    const fIdx = mData.bfSpendDetails.findIndex(x => x.amt === item.amt && x.note === `約會-${item.rawNote || ''}`);
                     if (fIdx !== -1) mData.bfSpendDetails.splice(fIdx, 1);
                 }
             }
 
-            // 扣回約會總額與圖表總開銷
             mData.dateTotalSpend = safeNum(mData.dateTotalSpend) - safeNum(item.amt);
             mData.out = safeNum(mData.out) - safeNum(item.amt);
-            mData.outDetails["🌹 約會開銷"] = safeNum(mData.outDetails["🌹 約val銷"]) - safeNum(item.amt);
-            
             mData.dateSpendDetails.splice(idx, 1);
             syncData('push');
         }
+    }
+
+    // 圖表繪製助手
+    function renderPieChart(ctx, list, labelKey) {
+        const group = {};
+        list.forEach(item => {
+            const label = item[labelKey] || "未分类";
+            group[label] = (group[label] || 0) + safeNum(item.amt);
+        });
+        const labels = Object.keys(group);
+        const dataVals = labels.map(l => group[l]);
+
+        return new Chart(ctx, { 
+            type: 'doughnut', 
+            data: { 
+                labels: labels.length ? labels : ["暫無支出"], 
+                datasets: [{
+                    data: labels.length ? dataVals : [1], 
+                    backgroundColor: ['#0052cc','#ff8da1','#38b6ff','#2ecc71','#f39c12','#a55eea','#1abc9c','#e74c3c','#34495e']
+                }] 
+            }, 
+            options: { plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } } } } 
+        });
     }
 
     function updateUI() {
@@ -550,14 +587,14 @@
         const salList = document.getElementById('my-salary-list'); salList.innerHTML = '';
         (mData.salaryDetails || []).forEach((v, i)=>{
             const d = document.createElement('div'); d.className='detail-item-row'; d.onclick=()=>delSalary(i);
-            d.innerHTML = `<span>🗓️ ${v.date}</span><span style="color:var(--green); font-weight:bold;">+$${safeNum(v.amt).toLocaleString()} 🗑️</span>`;
+            d.innerHTML = `<span>🗓️ ${v.date} - ${v.note || '領俸祿'}</span><span style="color:var(--green); font-weight:bold;">+$${safeNum(v.amt).toLocaleString()} 🗑️</span>`;
             salList.appendChild(d);
         });
 
         const exList = document.getElementById('my-spend-list'); exList.innerHTML = '';
         (mData.mySpendDetails || []).forEach((v, i)=>{
             const d = document.createElement('div'); d.className='detail-item-row'; d.onclick=()=>delMySpend(i);
-            d.innerHTML = `<span>🏷️ [${v.cat}] (${v.date})</span><span style="color:var(--out); font-weight:bold;">-$${safeNum(v.amt).toLocaleString()} 🗑️</span>`;
+            d.innerHTML = `<span>🏷️ ${v.cat} (${v.date})</span><span style="color:var(--out); font-weight:bold;">-$${safeNum(v.amt).toLocaleString()} 🗑️</span>`;
             exList.appendChild(d);
         });
 
@@ -571,7 +608,7 @@
         const bfIncList = document.getElementById('bf-income-list'); bfIncList.innerHTML = '';
         (mData.bfIncomeDetails || []).forEach((v, i)=>{
             const d = document.createElement('div'); d.className='detail-item-row'; d.onclick=()=>delBfIncome(i);
-            d.innerHTML = `<span>🐶 飼養員進貢 (${v.date})</span><span style="color:var(--green); font-weight:bold;">+$${safeNum(v.amt).toLocaleString()} 🗑️</span>`;
+            d.innerHTML = `<span>🐶 ${v.note || '進貢'} (${v.date})</span><span style="color:var(--green); font-weight:bold;">+$${safeNum(v.amt).toLocaleString()} 🗑️</span>`;
             bfIncList.appendChild(d);
         });
 
@@ -592,7 +629,7 @@
         const svList = document.getElementById('my-saved-list'); svList.innerHTML = '';
         (mData.savedDetails || []).forEach((v, i)=>{
             const d = document.createElement('div'); d.className='detail-item-row'; d.onclick=()=>delIn(i);
-            d.innerHTML = `<span>🔒 ${v.date} 強制充公</span><span style="color:var(--gold); font-weight:bold;">$${safeNum(v.amt).toLocaleString()} 🗑️</span>`;
+            d.innerHTML = `<span>🔒 ${v.date} - ${v.note || '強制充公'}</span><span style="color:var(--gold); font-weight:bold;">$${safeNum(v.amt).toLocaleString()} 🗑️</span>`;
             svList.appendChild(d);
         });
 
@@ -609,15 +646,15 @@
             }
         }
         
+        // 渲染三大獨立圖表
         if(document.getElementById('page-charts').classList.contains('active')) {
-            const ctx = document.getElementById('outPieChart'); if(outPieChart) outPieChart.destroy();
-            const details = mData.outDetails || {};
-            const labs = Object.keys(details).filter(c => safeNum(details[c]) > 0); const dataVals = labs.map(c => safeNum(details[c]));
-            outPieChart = new Chart(ctx, { 
-                type:'doughnut', 
-                data: { labels: labs.length?labs:["暫無支出"], datasets:[{data: labs.length?dataVals:[1], backgroundColor:['#0052cc','#ff8da1','#38b6ff','#2ecc71','#f39c12','#a55eea','#1abc9c']}] }, 
-                options: { plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } } } } 
-            });
+            if(chartMy) chartMy.destroy();
+            if(chartBf) chartBf.destroy();
+            if(chartDate) chartDate.destroy();
+
+            chartMy = renderPieChart(document.getElementById('mySpendChart'), mData.mySpendDetails || [], 'cat');
+            chartBf = renderPieChart(document.getElementById('bfSpendChart'), mData.bfSpendDetails || [], 'note');
+            chartDate = renderPieChart(document.getElementById('dateSpendChart'), mData.dateSpendDetails || [], 'note');
         }
     }
 
@@ -647,7 +684,6 @@
         if(res.isConfirmed) {
             mData.bfFundTotal = safeNum(mData.bfFundTotal) + safeNum(item.amt);
             mData.out = safeNum(mData.out) - safeNum(item.amt);
-            mData.outDetails[`🎁 ${item.note}`] = safeNum(mData.outDetails[`🎁 ${item.note}`]) - safeNum(item.amt);
             mData.bfSpendDetails.splice(idx, 1); 
             syncData('push'); 
         }
@@ -659,23 +695,15 @@
     }
 
     async function openSettingsMenu() {
-        const { value: mode } = await Swal.fire({ title: '⚙️ 存摺設定中心', input: 'radio', inputOptions: { 'URL': '基地網址同步', 'CAT': '自訂噴錢名目', 'RESET': '📜 數據重置' }, showCancelButton: true });
+        const { value: mode } = await Swal.fire({ title: '⚙️ 存摺設定中心', input: 'radio', inputOptions: { 'URL': '基地網址同步', 'RESET': '📜 數據重置' }, showCancelButton: true });
         if (mode === 'URL') {
             const { value: u } = await Swal.fire({ title: '同步網址', input: 'text', inputValue: WEB_APP_URL });
             if (u !== null) { WEB_APP_URL = u; localStorage.setItem('user_gas_url', u); syncData('pull'); }
-        } else if (mode === 'CAT') {
-            let catHtml = db.categories.map((c, i) => `<div style="display:flex; justify-content:space-between; margin-bottom:5px;"><span>${c}</span><button onclick="window.removeCat(${i})" style="background:var(--out); color:white; border:none; padding:3px 8px; border-radius:5px;">刪除</button></div>`).join('');
-            const { value: act } = await Swal.fire({ title: '支出名目管理', html: `<div style="text-align:left;">${catHtml}</div>`, confirmButtonText: '➕ 新增名目', showCancelButton: true });
-            if (act) {
-                const { value: n } = await Swal.fire({ title: '新名目名稱', input: 'text' });
-                if (n && !db.categories.includes(n)) { db.categories.push(n); syncData('push'); }
-            }
         } else if (mode === 'RESET') {
             const res = await Swal.fire({ title: '確定要全部清空？', text: '此操作將清除所有本機數據！', icon: 'warning', showCancelButton: true });
             if (res.isConfirmed) { db.total = 0; db.years = {}; syncData('push'); }
         }
     }
-    window.removeCat = async (i) => { db.categories.splice(i, 1); syncData('push'); Swal.close(); };
 
     async function syncData(mode) {
         if(!WEB_APP_URL) return updateUI();
@@ -684,7 +712,7 @@
             if(mode==='push') await fetch(WEB_APP_URL, {method:'POST', body:JSON.stringify({data:db})});
             else { 
                 const r = await fetch(WEB_APP_URL); const j = await r.json(); 
-                if(j && typeof j.total !== 'undefined') { db = j; db.total = safeNum(db.total); if(!db.categories) db.categories = ["伙食","交通","娛樂","購物","其他"]; }
+                if(j && typeof j.total !== 'undefined') { db = j; db.total = safeNum(db.total); }
             }
             updateUI();
         } catch(e) { console.error(e); }
