@@ -143,7 +143,7 @@
         
         <div class="top-summary-full">
             <div>
-                <div class="summary-item">🐱 飼養基金總額</div>
+                <div class="summary-item">🐱 共同基金總額</div>
                 <div class="summary-val pink-text" id="top-bf-balance">$ 0</div>
             </div>
             <div>
@@ -160,7 +160,7 @@
         </button>
         <button class="nav-tab" onclick="switchPage('page-bf-feed', event)">
             <div class="nav-tab-icon" style="color: var(--bf-pink);">🐶</div>
-            <div class="nav-tab-text">阿毛飼養員</div>
+            <div class="nav-tab-text">共同帳本</div>
         </button>
         <button class="nav-tab" onclick="switchPage('page-date-ledger', event)">
             <div class="nav-tab-icon" style="color: var(--date-blue);">🌹</div>
@@ -204,7 +204,7 @@
         <div id="page-bf-feed" class="page">
             <div class="main-card" style="background: #fffbfb; border: 1px solid #ffe3e7;">
                 <span class="bank-tag tag-cathay">🌳 國泰世華</span>
-                <div class="card-mini-title">🐱 飼養員小金庫總餘額</div>
+                <div class="card-mini-title">🐱 共同小金庫總餘額</div>
                 <div class="card-big-amount" id="bf-balance-display" style="color: var(--bf-pink);">$ 0</div>
                 <input type="number" id="bf-amount" placeholder="輸入金額..." inputmode="numeric" class="num-input">
                 <input type="date" id="bf-date" class="date-picker-input">
@@ -227,7 +227,7 @@
                 <input type="number" id="date-amount" placeholder="輸入金額..." inputmode="numeric" class="num-input">
                 <select id="date-deduct-source" class="source-select-input">
                     <option value="my">💼 扣除：阿毛帳本 (土銀)</option>
-                    <option value="bf">🐱 扣除：飼養基金 (國泰)</option>
+                    <option value="bf">🐱 扣除：共同帳本 (國泰)</option>
                 </select>
                 <input type="date" id="date-date" class="date-picker-input">
                 <div class="action-btn-grid">
